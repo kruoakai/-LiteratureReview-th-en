@@ -1,0 +1,196 @@
+/* ── Reset & base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Light theme (default token values) */
+  --bg:       #f4f5fb;
+  --surface:  #ffffff;
+  --surface2: #eef0f9;
+  --surface3: #e3e7f6;
+  --border:   #dde1f2;
+  --border2:  #c7cee6;
+
+  --text:     #1b1e2e;
+  --text2:    #4c5273;
+  --text3:    #656d95;
+
+  --accent:   #4a63e0;
+  --accent2:  #7c5ce0;
+  --accent-glow: rgba(74,99,224,0.10);
+
+  --d1: #4a63e0;
+  --d2: #7c5ce0;
+  --d3: #0f9d70;
+  --d4: #c98a06;
+  --d5: #d1560c;
+  --d6: #dc2626;
+
+  --score9:  #059669;
+  --score8:  #10b981;
+  --score7:  #d97706;
+  --score6:  #ea580c;
+  --score5:  #dc2626;
+  --score3:  #b91c1c;
+
+  --tag-yes-bg:    rgba(74,99,224,0.08);
+  --tag-yes-border:rgba(74,99,224,0.35);
+  --tag-yes-text:  #33469e;
+  --tag-warn-bg:    rgba(217,119,6,0.10);
+  --tag-warn-border:rgba(217,119,6,0.35);
+  --tag-warn-text:  #8a5c05;
+
+  --danger:        #c62828;
+  --danger-bg:     rgba(198,40,40,0.08);
+  --danger-border: rgba(198,40,40,0.35);
+  --success:       #0f8a5f;
+  --success-bg:    rgba(15,138,95,0.10);
+  --success-border:rgba(15,138,95,0.35);
+
+  --radius:  8px;
+  --radius2: 12px;
+  --transition: 0.18s ease;
+}
+
+/* Dark theme override — toggled via data-theme on <html> (see main.js / App.svelte) */
+:root[data-theme="dark"] {
+  --bg:       #0f1117;
+  --surface:  #1a1d27;
+  --surface2: #22263a;
+  --surface3: #2a2f4a;
+  --border:   #2d3250;
+  --border2:  #3d4470;
+
+  --text:     #e8eaf6;
+  --text2:    #9da5cc;
+  --text3:    #5c6490;
+
+  --accent:   #6c8fff;
+  --accent2:  #a78bfa;
+  --accent-glow: rgba(108,143,255,0.15);
+
+  --d1: #6c8fff;
+  --d2: #a78bfa;
+  --d3: #34d399;
+  --d4: #fbbf24;
+  --d5: #f97316;
+  --d6: #ef4444;
+
+  --score9:  #10b981;
+  --score8:  #34d399;
+  --score7:  #fbbf24;
+  --score6:  #f97316;
+  --score5:  #ef4444;
+  --score3:  #f87171;
+
+  --tag-yes-bg:    rgba(108,143,255,0.12);
+  --tag-yes-border:rgba(108,143,255,0.3);
+  --tag-yes-text:  #93acff;
+  --tag-warn-bg:    rgba(251,191,36,0.12);
+  --tag-warn-border:rgba(251,191,36,0.3);
+  --tag-warn-text:  #fcd34d;
+
+  --danger:        #fca5a5;
+  --danger-bg:     rgba(239,68,68,0.12);
+  --danger-border: rgba(239,68,68,0.3);
+  --success:       #6ee7b7;
+  --success-bg:    rgba(16,185,129,0.12);
+  --success-border:rgba(16,185,129,0.3);
+}
+
+html { font-size: 15px; scroll-behavior: smooth; }
+
+body {
+  font-family: 'Segoe UI', 'Leelawadee UI', Tahoma, system-ui, -apple-system, 'Noto Sans Thai', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+/* ── Utility ──────────────────────────────────────────────── */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 99px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.tag.yes   { background: var(--tag-yes-bg); border-color: var(--tag-yes-border); color: var(--tag-yes-text); }
+.tag.warn  { background: var(--tag-warn-bg); border-color: var(--tag-warn-border); color: var(--tag-warn-text); }
+.tag.muted { background: rgba(93,101,136,0.15);  border-color: rgba(93,101,136,0.3);  color: var(--text3); }
+
+.badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+}
+.badge.caution { background: var(--tag-warn-bg); color: var(--tag-warn-text); border: 1px solid var(--tag-warn-border); }
+
+/* ── Manage Data (admin editors) ──────────────────────────── */
+.manage .btn {
+  padding: 6px 12px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  color: var(--text2); font-size: 0.78rem; cursor: pointer; white-space: nowrap;
+  transition: all var(--transition);
+}
+.manage .btn:hover { border-color: var(--accent); color: var(--text); }
+.manage .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.manage .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.manage .btn.primary:hover { opacity: 0.9; color: #fff; }
+.manage .btn.danger { background: var(--danger); border-color: var(--danger); color: var(--surface); font-weight: 600; }
+.manage .btn.ghost-danger:hover { border-color: var(--danger); color: var(--danger); }
+.manage .msg { font-size: 0.78rem; padding: 8px 10px; border-radius: var(--radius); }
+.manage .msg.error { color: var(--danger); background: var(--danger-bg); border: 1px solid var(--danger-border); }
+.manage .msg.ok { color: var(--success); background: var(--success-bg); border: 1px solid var(--success-border); }
+
+/* ── Sign-in screens (password, 2FA setup/verify, forced password change) ── */
+.auth-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.auth-card {
+  width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius2); padding: 28px; display: flex; flex-direction: column; gap: 14px;
+}
+.auth-card.wide { max-width: 440px; }
+.auth-logo { display: flex; align-items: center; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+.auth-logo .logo-icon { font-size: 1.6rem; }
+.auth-logo-text { flex: 1; min-width: 0; }
+.auth-logo .logo-title { font-size: 0.88rem; font-weight: 700; color: var(--text); line-height: 1.2; }
+.auth-logo .logo-sub { font-size: 0.68rem; color: var(--text3); }
+.auth-heading { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-top: 2px; }
+.auth-text { font-size: 0.8rem; color: var(--text2); line-height: 1.55; }
+.auth-field { display: flex; flex-direction: column; gap: 6px; font-size: 0.78rem; color: var(--text2); }
+.auth-field input {
+  padding: 8px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+  color: var(--text); font-size: 0.85rem; outline: none; transition: border-color var(--transition);
+}
+.auth-field input:focus { border-color: var(--accent); }
+.auth-field input.code { font-size: 1.2rem; letter-spacing: 0.3em; text-align: center; font-family: ui-monospace, monospace; }
+.auth-error { font-size: 0.78rem; color: var(--danger); background: var(--danger-bg); border: 1px solid var(--danger-border); border-radius: var(--radius); padding: 8px 10px; }
+.auth-btn {
+  margin-top: 4px; padding: 9px 14px; background: var(--accent); border: none; border-radius: var(--radius);
+  color: #fff; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: opacity var(--transition);
+}
+.auth-btn:hover { opacity: 0.9; }
+.auth-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.auth-link { background: none; border: none; color: var(--text3); font-size: 0.76rem; cursor: pointer; align-self: center; }
+.auth-link:hover { color: var(--accent); text-decoration: underline; }
+.secret-box {
+  font-family: ui-monospace, monospace; font-size: 0.78rem; word-break: break-all; text-align: center;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; color: var(--text);
+}

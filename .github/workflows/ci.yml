@@ -1,0 +1,140 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call: # cd.yml runs this whole pipeline before publishing a release image
+    secrets:
+      SNYK_TOKEN:
+        required: false
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# Third-party actions are pinned to a full commit SHA (tag in the comment); Dependabot updates them.
+jobs:
+  audit:
+    name: npm audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # Gate: everything that runs in production (server deps + libraries bundled into the browser).
+      - run: npm audit --omit=dev --audit-level=high
+      # Build tooling too (vite and its plugin), so nothing slips in unnoticed.
+      - run: npm audit --audit-level=high
+
+  test:
+    name: Build + smoke test + browser test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # API end to end: sign-in / 2FA / RBAC / lockout / CSRF / data API / sessions across restart
+      - run: npm test
+      # Real browser (the runner's Chrome): every screen, the 2FA flow, role-based tabs, the editors
+      - run: npm run test:ui
+
+  docker:
+    name: Docker image + smoke test
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+      - name: Build image
+        run: docker build -t literature-review-tracker:ci .
+      - name: Start container
+        run: |
+          docker run -d --name lrt -p 3000:80 \
+            -e TOTP_ENCRYPTION_KEY="$(openssl rand -hex 32)" \
+            -e ADMIN_EMAIL=admin@example.com -e ADMIN_PASSWORD=ci-admin-password \
+            -e RATE_LIMIT_LOGIN=500 -e RATE_LIMIT_2FA=500 -e RATE_LIMIT_API=5000 \
+            literature-review-tracker:ci
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000/api/health > /dev/null && exit 0
+            sleep 2
+          done
+          docker logs lrt; exit 1
+      - name: Smoke test against the container
+        run: node scripts/smoke-test.mjs
+        env:
+          BASE_URL: http://localhost:3000
+          ADMIN_EMAIL: admin@example.com
+          ADMIN_PASSWORD: ci-admin-password
+      - name: Container runs as non-root
+        run: test "$(docker exec lrt id -u)" != "0"
+      - name: Production image has no default test accounts
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' -H 'Content-Type: application/json' \
+            -d '{"email":"user@example.com","password":"User@12345"}' http://localhost:3000/api/auth/login)
+          test "$code" = "401"
+      - name: Container logs on failure
+        if: failure()
+        run: docker logs lrt
+
+  snyk:
+    name: Snyk (dependencies, code, container)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # upload results to the repo's Security → Code scanning tab
+    env:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check for SNYK_TOKEN
+        id: token
+        run: |
+          if [ -z "$SNYK_TOKEN" ]; then
+            echo "::warning title=Snyk skipped::Add a SNYK_TOKEN repository secret to enable Snyk scanning (see CI-CD.md)."
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        if: steps.token.outputs.present == 'true'
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install
+        if: steps.token.outputs.present == 'true'
+        run: |
+          npm ci
+          npm install -g snyk
+      - name: Snyk Open Source (npm dependencies)
+        if: steps.token.outputs.present == 'true'
+        run: snyk test --severity-threshold=high --sarif-file-output=snyk-deps.sarif
+      - name: Snyk Code (static analysis of our source)
+        if: steps.token.outputs.present == 'true' && !cancelled()
+        run: snyk code test --severity-threshold=high --sarif-file-output=snyk-code.sarif
+      - name: Snyk Container (built image, OS packages + bundled deps)
+        if: steps.token.outputs.present == 'true' && !cancelled()
+        run: |
+          docker build -t literature-review-tracker:snyk .
+          snyk container test literature-review-tracker:snyk --file=Dockerfile --severity-threshold=high --sarif-file-output=snyk-container.sarif
+      - name: Upload results to GitHub code scanning
+        if: steps.token.outputs.present == 'true' && !cancelled()
+        continue-on-error: true # code scanning needs a public repo or GitHub Advanced Security
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          sarif_file: .
+      - name: Record dependency snapshot in Snyk (main only)
+        if: steps.token.outputs.present == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: snyk monitor --project-name=literature-review-tracker

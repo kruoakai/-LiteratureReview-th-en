@@ -1,0 +1,24 @@
+[
+  {
+    "id": "G1",
+    "title": "Forecast-driven RL decision-making",
+    "priority": "high",
+    "status": "open",
+    "description": "Forecasting papers stop at prediction accuracy, while RL papers assume the state is fully observed. Few works feed learned forecasts directly into an RL policy.",
+    "evidence": [
+      "Paper 04 (Informer): strong forecaster, no downstream decision layer",
+      "Paper 05 (DQN): strong policy learner, no forecast input"
+    ],
+    "opportunity": "Combine an attention-based forecaster (Paper 04) with an RL agent (Paper 05) in one closed loop.",
+    "searchGuidance": "model-based RL with learned forecasts, predict-then-optimize"
+  },
+  {
+    "id": "G2",
+    "title": "Recurrent baselines",
+    "priority": "low",
+    "status": "closed",
+    "description": "Recurrent baselines are already well covered by Papers 01-02.",
+    "evidence": ["Paper 01 (LSTM)", "Paper 02 (GRU)"],
+    "opportunity": "No further search needed — cite as baselines."
+  }
+]

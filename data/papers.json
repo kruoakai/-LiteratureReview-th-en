@@ -1,0 +1,77 @@
+[
+  {
+    "id": 1, "num": "01", "domain": 1, "score": 9, "caution": false,
+    "title": "Long Short-Term Memory",
+    "authors": "Hochreiter & Schmidhuber",
+    "venue": "Neural Computation", "year": 1997,
+    "doi": "10.1162/neco.1997.9.8.1735",
+    "what": "Introduces the LSTM cell, which mitigates vanishing gradients in recurrent networks.",
+    "how": "Gated memory cells with a constant error carousel; trained with truncated backpropagation through time.",
+    "results": "Learns dependencies over 1,000+ time steps where earlier RNNs fail.",
+    "usage": "Background section — the standard recurrent baseline for forecasting experiments.",
+    "tags": [
+      { "label": "Foundational", "type": "yes" },
+      { "label": "Baseline model", "type": "yes" },
+      { "label": "No forecasting benchmark", "type": "" }
+    ]
+  },
+  {
+    "id": 2, "num": "02", "domain": 1, "score": 7, "caution": false,
+    "title": "Learning Phrase Representations using RNN Encoder-Decoder for Statistical Machine Translation",
+    "authors": "Cho et al.",
+    "venue": "EMNLP", "year": 2014,
+    "doi": "10.3115/v1/D14-1179",
+    "what": "Proposes the RNN encoder-decoder and the gated recurrent unit (GRU).",
+    "how": "Two RNNs (encoder, decoder) trained jointly; the GRU uses reset and update gates.",
+    "results": "Improves phrase-based translation scores; the GRU becomes a lighter alternative to the LSTM.",
+    "usage": "Methods section — justify the GRU as a cheaper recurrent baseline.",
+    "tags": [
+      { "label": "GRU", "type": "yes" },
+      { "label": "Not time-series domain", "type": "warn" }
+    ]
+  },
+  {
+    "id": 3, "num": "03", "domain": 2, "score": 9, "caution": false,
+    "title": "Attention Is All You Need",
+    "authors": "Vaswani et al.",
+    "venue": "NeurIPS", "year": 2017,
+    "what": "Introduces the Transformer, built entirely on self-attention.",
+    "how": "Multi-head scaled dot-product attention with positional encodings; no recurrence.",
+    "results": "State-of-the-art translation quality with much faster training than RNNs.",
+    "usage": "Background section — origin of attention-based forecasting models.",
+    "tags": [
+      { "label": "Foundational", "type": "yes" },
+      { "label": "No forecasting benchmark", "type": "" }
+    ]
+  },
+  {
+    "id": 4, "num": "04", "domain": 2, "score": 8, "caution": false,
+    "title": "Informer: Beyond Efficient Transformer for Long Sequence Time-Series Forecasting",
+    "authors": "Zhou et al.",
+    "venue": "AAAI", "year": 2021,
+    "doi": "10.1609/aaai.v35i12.17325",
+    "what": "Adapts the Transformer to long-horizon time-series forecasting.",
+    "how": "ProbSparse self-attention, self-attention distilling, and a generative-style decoder.",
+    "results": "Outperforms LSTM and vanilla Transformer baselines on long-horizon benchmarks.",
+    "usage": "Related work — strongest attention-based forecasting baseline to compare against.",
+    "tags": [
+      { "label": "Time-series", "type": "yes" },
+      { "label": "Long horizon", "type": "yes" }
+    ]
+  },
+  {
+    "id": 5, "num": "05", "domain": 3, "score": 7, "caution": false,
+    "title": "Human-Level Control through Deep Reinforcement Learning",
+    "authors": "Mnih et al.",
+    "venue": "Nature", "year": 2015,
+    "doi": "10.1038/nature14236",
+    "what": "The Deep Q-Network (DQN) learns control policies directly from high-dimensional input.",
+    "how": "Q-learning with a convolutional network, experience replay, and a target network.",
+    "results": "Human-level performance on 29 of 49 Atari games with a single architecture.",
+    "usage": "Methods section — reference RL algorithm for turning forecasts into decisions.",
+    "tags": [
+      { "label": "RL baseline", "type": "yes" },
+      { "label": "No forecasting input", "type": "" }
+    ]
+  }
+]

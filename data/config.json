@@ -1,0 +1,7 @@
+{
+  "title": "Literature Review",
+  "subtitle": "Example corpus — time-series forecasting",
+  "icon": "📚",
+  "pipelineTitle": "Research Pipeline",
+  "pipelineSubtitle": "Sequence models → attention-based forecasting → decision-making with RL"
+}

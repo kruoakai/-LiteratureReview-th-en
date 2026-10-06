@@ -1,0 +1,8 @@
+[
+  {
+    "id": "x1", "status": "rejected", "batch": "2026-01",
+    "title": "Learning Representations by Back-Propagating Errors",
+    "authors": "Rumelhart, Hinton & Williams", "venue": "Nature", "year": 1986,
+    "reason": "Foundational, but too general for this corpus — cited only via textbooks."
+  }
+]

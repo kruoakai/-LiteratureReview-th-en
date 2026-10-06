@@ -1,0 +1,12 @@
+{
+  "1": {
+    "where": "Chapter 2 — Recurrent baselines",
+    "label": "Hochreiter & Schmidhuber (1997) — LSTM origin",
+    "text": "\"Long Short-Term Memory networks (Hochreiter & Schmidhuber, 1997) address the vanishing-gradient problem of recurrent networks through gated memory cells, and remain the most widely used recurrent baseline for time-series forecasting.\""
+  },
+  "4": {
+    "where": "Chapter 2 — Attention-based forecasting",
+    "label": "Zhou et al. (2021) — Long-horizon Transformer",
+    "text": "\"Zhou et al. (2021) show that a sparse-attention Transformer (Informer) outperforms recurrent baselines on long-horizon forecasting, motivating the attention-based forecaster used in this work.\""
+  }
+}

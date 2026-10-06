@@ -1,0 +1,5 @@
+[
+  { "step": 1, "label": "Recurrent Baselines", "sublabel": "LSTM / GRU", "color": "#6c8fff", "domain": 1, "papers": [1, 2], "note": "Establish baseline forecasting accuracy." },
+  { "step": 2, "label": "Attention Forecaster", "sublabel": "Transformer-family models", "color": "#a78bfa", "domain": 2, "papers": [3, 4], "note": "Main forecasting model of the study." },
+  { "step": 3, "label": "RL Decision Layer", "sublabel": "Forecast to action", "color": "#34d399", "domain": 3, "papers": [5], "note": "Uses forecasts as part of the agent state." }
+]

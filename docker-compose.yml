@@ -1,0 +1,32 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:80"
+    environment:
+      - PORT=80
+      - DATA_DIR=/app/data
+      - PAPERS_DIR=/app/papers
+      - STATE_DIR=/app/state
+      # Required: encrypts every user's 2FA secret. Created by scripts/generate-secrets.sh.
+      # Keep it safe and never change it, or every user has to set up 2FA again.
+      - TOTP_ENCRYPTION_KEY=${TOTP_ENCRYPTION_KEY:?Run scripts/generate-secrets.sh first}
+      - TWOFA_ISSUER=${TWOFA_ISSUER:-Literature Review Tracker}
+      # Behind an HTTPS reverse proxy (nginx, Caddy, ...): COOKIE_SECURE=true and TRUST_PROXY=1.
+      - COOKIE_SECURE=${COOKIE_SECURE:-false}
+      - TRUST_PROXY=${TRUST_PROXY:-false}
+      # First run only: creates the first admin when no users exist yet. Safe to remove afterwards.
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
+      # Legacy: users from older versions are moved from this file into state/users.json on start.
+      - AUTH_ENV_PATH=/app/state/users.env
+      - CUSTOM_PAPERS_PATH=/app/state/custom-papers.json
+    volumes:
+      # Your corpus (JSON files). Writable so the "Manage Data" tab can save; you can still edit
+      # the files on the host and refresh the browser.
+      - ./data:/app/data
+      # Optional paper PDFs: papers/<domain slug>/D<domain>-<NN>-<name>.pdf
+      - ./papers:/app/papers:ro
+      # Users (with 2FA state), session secret and the audit log.
+      - ./state:/app/state
+    restart: unless-stopped

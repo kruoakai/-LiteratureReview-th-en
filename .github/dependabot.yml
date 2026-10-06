@@ -1,0 +1,20 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    ignore:
+      # Stay on Node LTS lines. Odd majors never become LTS; even majors are taken once they reach
+      # LTS (late October of their release year), by bumping the Dockerfile and CI by hand.
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]

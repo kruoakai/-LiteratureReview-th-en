@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "slug": "domain-1-sequence-models",
+    "color": "#6c8fff",
+    "label": "Sequence Models",
+    "fullLabel": "Recurrent Sequence Models",
+    "description": "Recurrent architectures (RNN/LSTM/GRU) used as forecasting baselines.",
+    "target": 4,
+    "keywords": ["LSTM time series forecasting", "GRU sequence modeling"]
+  },
+  {
+    "id": 2,
+    "slug": "domain-2-attention",
+    "color": "#a78bfa",
+    "label": "Attention & Transformers",
+    "fullLabel": "Attention-Based Forecasting",
+    "description": "Transformer-family models and their adaptations to long-horizon forecasting.",
+    "target": 4,
+    "keywords": ["transformer time series", "long sequence forecasting attention"]
+  },
+  {
+    "id": 3,
+    "slug": "domain-3-reinforcement-learning",
+    "color": "#34d399",
+    "label": "Reinforcement Learning",
+    "fullLabel": "Reinforcement Learning for Decision-Making",
+    "description": "RL methods that turn forecasts into actions.",
+    "target": 3,
+    "keywords": ["deep reinforcement learning control", "DQN"]
+  }
+]

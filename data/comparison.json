@@ -1,0 +1,16 @@
+{
+  "dimensions": ["Deep Learning", "Time-Series Data", "Decision-Making", "Empirical Validation"],
+  "cells": {
+    "1": {
+      "1": { "0": { "status": "yes", "note": "LSTM" }, "1": { "status": "partial", "note": "Synthetic sequences" }, "3": { "status": "yes", "note": "Toy benchmarks" } },
+      "2": { "0": { "status": "yes", "note": "GRU" }, "3": { "status": "yes", "note": "BLEU" } }
+    },
+    "2": {
+      "3": { "0": { "status": "yes", "note": "Transformer" }, "3": { "status": "yes", "note": "WMT 2014" } },
+      "4": { "0": { "status": "yes", "note": "ProbSparse attention" }, "1": { "status": "yes", "note": "ETT, ECL, Weather" }, "3": { "status": "yes", "note": "Beats LSTM baselines" } }
+    },
+    "3": {
+      "5": { "0": { "status": "yes", "note": "DQN" }, "2": { "status": "yes", "note": "Atari control" }, "3": { "status": "yes", "note": "49 games" } }
+    }
+  }
+}
