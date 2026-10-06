@@ -2,7 +2,7 @@
 
 [🇹🇭 ภาษาไทย](README.md) · 🇬🇧 English
 
-> 🌐 This version is adapted from [nuttkku/literature-review-tracker](https://github.com/nuttkku/literature-review-tracker) and adds a bilingual **Thai / English** UI (Thai by default, Buddhist-era dates). See [🌐 Language](#-language-thai--english).
+> 🌐 **Thai / English edition:** I added a **Thai / English** language menu to the original code by **Wanut Padee** ([nuttkku/literature-review-tracker](https://github.com/nuttkku/literature-review-tracker)), whose UI is English only. This edition uses Thai by default and shows Buddhist-era dates. See [🌐 Language](#-language-thai--english) and [🙏 Credits](#-credits-and-background).
 
 A self-hosted web app for running the **literature review** of a thesis or dissertation.
 
@@ -249,6 +249,17 @@ Computer Technical Officer, Digital Infrastructure Section, Office of Digital Te
 💡 **Why it exists:** the developer's own pain point. After reading a lot of papers, it was easy to forget which ones had been read, why one was excluded, or where it was supposed to be cited 😅 This tool keeps all of that in one place.
 
 🤖 **All of the code and documentation was written with AI** ([Claude Code](https://claude.com/claude-code)), based on the developer's ideas and needs. The developer set the direction for design, security, and testing, and reviewed the results.
+
+### 🌐 Thai / English edition
+
+The **Thai / English** language menu was added by [kruoakai](https://github.com/kruoakai), building on Wanut Padee's original code, whose UI is English only. The original is at [nuttkku/literature-review-tracker](https://github.com/nuttkku/literature-review-tracker).
+
+- 🔤 A **ไทย / EN** toggle on the sign-in screen and in the sidebar, with Thai as the default
+- 🗓️ System dates in the Buddhist Era when Thai is selected
+- 💬 Every screen translated, including server messages and Excel export headers
+- ✅ Thai checks added to the browser test (`npm run test:ui`)
+
+This part was also written with the help of AI ([Claude Code](https://claude.com/claude-code)), like the original. Thanks to Wanut Padee for releasing the code under the MIT license so it can be built on 🙏
 
 ## 📄 License
 
