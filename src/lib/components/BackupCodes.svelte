@@ -1,6 +1,8 @@
 <script>
   // Shows freshly issued backup codes once. They are never stored in plain text on the server,
   // so this is the only time anyone can see them.
+  import { t } from '../i18n.js'
+
   export let codes = []
 
   let copied = false
@@ -12,7 +14,7 @@
   }
 
   function download() {
-    const blob = new Blob([`Backup codes (each works once)\n\n${codes.join('\n')}\n`], { type: 'text/plain' })
+    const blob = new Blob([`${$t('bc.fileHeader')}\n\n${codes.join('\n')}\n`], { type: 'text/plain' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
     a.download = 'backup-codes.txt'
@@ -26,8 +28,8 @@
     {#each codes as code}<li>{code}</li>{/each}
   </ol>
   <div class="bc-actions">
-    <button type="button" class="bc-btn" on:click={copyAll}>{copied ? 'Copied ✓' : 'Copy all'}</button>
-    <button type="button" class="bc-btn" on:click={download}>Download .txt</button>
+    <button type="button" class="bc-btn" on:click={copyAll}>{copied ? $t('bc.copied') : $t('bc.copyAll')}</button>
+    <button type="button" class="bc-btn" on:click={download}>{$t('bc.download')}</button>
   </div>
 </div>
 

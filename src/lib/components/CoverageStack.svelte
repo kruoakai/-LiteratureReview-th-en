@@ -1,4 +1,6 @@
 <script>
+  import { t } from '../i18n.js'
+
   export let stackLayers
   export let domains
   export let title = 'Research Pipeline'
@@ -66,7 +68,7 @@
   <!-- Cross-cutting -->
   {#if crossCutting}
     <div class="cross-cutting" style="--cc-color:{crossCutting.color}">
-      <div class="cc-badge" style="color:{crossCutting.color};border-color:{crossCutting.color}40">⊗ Cross-Cutting</div>
+      <div class="cc-badge" style="color:{crossCutting.color};border-color:{crossCutting.color}40">{$t('cs.cross')}</div>
       <div class="cc-label" style="color:{crossCutting.color}">{crossCutting.label}</div>
       <div class="cc-sub">{crossCutting.sublabel}</div>
       <div class="cc-papers">

@@ -2,6 +2,8 @@
   import { createEventDispatcher, onMount, tick } from 'svelte'
   import { login, startTwoFactorSetup, confirmTwoFactorSetup, verifyTwoFactor } from '../auth.js'
   import BackupCodes from './BackupCodes.svelte'
+  import LangToggle from './LangToggle.svelte'
+  import { t } from '../i18n.js'
 
   // Sign-in always has two factors: step 'password', then 'setup' (first time, or after an admin
   // reset) or 'verify'. After setup the new backup codes are shown once ('backup').
@@ -81,85 +83,78 @@
   <div class="auth-card" class:wide={step === 'setup' || step === 'backup'}>
     <div class="auth-logo">
       <div class="logo-icon">{config.icon}</div>
-      <div>
+      <div class="auth-logo-text">
         <div class="logo-title">{config.title}</div>
         {#if config.subtitle}<div class="logo-sub">{config.subtitle}</div>{/if}
       </div>
+      <LangToggle />
     </div>
 
     {#if step === 'password'}
       <form class="stack" on:submit|preventDefault={submitPassword}>
-        <h1 class="auth-heading">Sign in</h1>
+        <h1 class="auth-heading">{$t('login.signIn')}</h1>
         <label class="auth-field">
-          <span>Email</span>
+          <span>{$t('login.email')}</span>
           <input type="email" bind:value={email} autocomplete="username" required />
         </label>
         <label class="auth-field">
-          <span>Password</span>
+          <span>{$t('login.password')}</span>
           <input type="password" bind:value={password} autocomplete="current-password" required maxlength="128" />
         </label>
         {#if error}<div class="auth-error">{error}</div>{/if}
-        <button class="auth-btn" type="submit" disabled={loading}>{loading ? 'Signing in…' : 'Continue'}</button>
+        <button class="auth-btn" type="submit" disabled={loading}>{loading ? $t('login.signingIn') : $t('login.continue')}</button>
       </form>
 
     {:else if step === 'setup'}
       <form class="stack" on:submit|preventDefault={submitSetup}>
-        <h1 class="auth-heading">Set up two-factor authentication</h1>
-        <p class="auth-text">
-          Every account needs a second factor. Scan this QR code with an authenticator app
-          (Google Authenticator, Microsoft Authenticator, Authy, 1Password, …), then enter the
-          6-digit code it shows.
-        </p>
+        <h1 class="auth-heading">{$t('login.setupTitle')}</h1>
+        <p class="auth-text">{$t('login.setupText')}</p>
         {#if setup}
-          <img class="qr" src={setup.qrCodeDataUrl} alt="QR code for your authenticator app" width="200" height="200" />
-          <p class="auth-text center">Can't scan it? Enter this key in the app instead:</p>
+          <img class="qr" src={setup.qrCodeDataUrl} alt={$t('login.qrAlt')} width="200" height="200" />
+          <p class="auth-text center">{$t('login.cantScan')}</p>
           <div class="secret-box">{setup.secret}</div>
         {:else}
-          <p class="auth-text">Generating your key…</p>
+          <p class="auth-text">{$t('login.generating')}</p>
         {/if}
         <label class="auth-field">
-          <span>6-digit code</span>
+          <span>{$t('login.code6')}</span>
           <input class="code" bind:this={codeInput} bind:value={code} inputmode="numeric" autocomplete="one-time-code" maxlength="6" required />
         </label>
         {#if error}<div class="auth-error">{error}</div>{/if}
-        <button class="auth-btn" type="submit" disabled={loading || !setup}>{loading ? 'Checking…' : 'Turn on 2FA'}</button>
-        <button type="button" class="auth-link" on:click={() => restart()}>Cancel</button>
+        <button class="auth-btn" type="submit" disabled={loading || !setup}>{loading ? $t('login.checking') : $t('login.turnOn')}</button>
+        <button type="button" class="auth-link" on:click={() => restart()}>{$t('common.cancel')}</button>
       </form>
 
     {:else if step === 'verify'}
       <form class="stack" on:submit|preventDefault={submitVerify}>
-        <h1 class="auth-heading">Two-factor authentication</h1>
+        <h1 class="auth-heading">{$t('login.verifyTitle')}</h1>
         {#if useBackupCode}
-          <p class="auth-text">Enter one of your backup codes. Each code works only once.</p>
+          <p class="auth-text">{$t('login.backupText')}</p>
           <label class="auth-field">
-            <span>Backup code</span>
+            <span>{$t('login.backupCode')}</span>
             <input class="code" bind:this={codeInput} bind:value={code} autocomplete="off" maxlength="9" placeholder="XXXX-XXXX" required />
           </label>
         {:else}
-          <p class="auth-text">Enter the 6-digit code from your authenticator app.</p>
+          <p class="auth-text">{$t('login.verifyText')}</p>
           <label class="auth-field">
-            <span>6-digit code</span>
+            <span>{$t('login.code6')}</span>
             <input class="code" bind:this={codeInput} bind:value={code} inputmode="numeric" autocomplete="one-time-code" maxlength="6" required />
           </label>
         {/if}
         {#if error}<div class="auth-error">{error}</div>{/if}
-        <button class="auth-btn" type="submit" disabled={loading}>{loading ? 'Checking…' : 'Verify'}</button>
+        <button class="auth-btn" type="submit" disabled={loading}>{loading ? $t('login.checking') : $t('login.verify')}</button>
         <button type="button" class="auth-link" on:click={() => { useBackupCode = !useBackupCode; code = ''; error = '' }}>
-          {useBackupCode ? 'Use the authenticator app instead' : 'Lost your phone? Use a backup code'}
+          {useBackupCode ? $t('login.useApp') : $t('login.lostPhone')}
         </button>
-        <button type="button" class="auth-link" on:click={() => restart()}>Back to sign in</button>
+        <button type="button" class="auth-link" on:click={() => restart()}>{$t('login.back')}</button>
       </form>
 
     {:else if step === 'backup'}
       <div class="stack">
-        <h1 class="auth-heading">Save your backup codes</h1>
-        <p class="auth-text">
-          2FA is on. If you lose your phone, each of these codes lets you sign in once. Store them
-          somewhere safe. <strong>You won't see them again</strong>, but you can make a new set from
-          your account panel.
-        </p>
+        <h1 class="auth-heading">{$t('login.saveTitle')}</h1>
+        <p class="auth-text">{$t('login.saveText1')} <strong>{$t('login.saveStrong')}</strong>{$t('login.saveText2')}</p>
         <BackupCodes codes={backupCodes} />
-        <button class="auth-btn" on:click={() => dispatch('success', signedInUser)}>I've saved them, continue</button>
+        <button class="auth-btn" on:click={() => dispatch('success', signedInUser)}>{$t('login.saved')}</button>
       </div>
     {/if}
   </div>

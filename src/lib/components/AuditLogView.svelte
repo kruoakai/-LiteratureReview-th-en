@@ -1,30 +1,18 @@
 <script>
   import { onMount } from 'svelte'
   import { listAuditEvents } from '../auth.js'
+  import { t, fmtDateTime } from '../i18n.js'
 
   let events = []
   let error = ''
   let loading = true
   let filter = ''
 
-  const LABELS = {
-    login_failed: 'Wrong password',
-    login_locked: 'Account locked',
-    login_disabled: 'Sign-in to disabled account',
-    login_password_verified: 'Password OK, 2FA pending',
-    '2fa_setup_complete': '2FA set up',
-    '2fa_setup_failed': '2FA setup code wrong',
-    '2fa_verify_success': 'Signed in (2FA)',
-    '2fa_verify_failed': '2FA code wrong',
-    '2fa_backup_code_used': 'Signed in with backup code',
-    password_changed: 'Password changed',
-    backup_codes_regenerated: 'New backup codes',
-    admin_user_created: 'User created',
-    admin_user_updated: 'User role/status changed',
-    admin_user_deleted: 'User deleted',
-    admin_password_reset: 'Password reset by admin',
-    admin_2fa_reset: '2FA reset by admin',
-    data_saved: 'Data saved',
+  // Known events have a translated label (audit.<event> in i18n.js); others show their raw name.
+  $: label = (event) => {
+    const key = `audit.${event}`
+    const s = $t(key)
+    return s === key ? event : s
   }
   const DANGER = new Set(['login_failed', 'login_locked', 'login_disabled', '2fa_setup_failed', '2fa_verify_failed'])
 
@@ -44,30 +32,30 @@
   const details = (m) => (m ? Object.entries(m).filter(([, v]) => v !== undefined).map(([k, v]) => `${k}: ${v}`).join(' · ') : '')
 
   $: q = filter.trim().toLowerCase()
-  $: shown = events.filter((e) => !q || JSON.stringify(e).toLowerCase().includes(q))
+  $: shown = events.filter((e) => !q || `${JSON.stringify(e)} ${label(e.event)}`.toLowerCase().includes(q))
 </script>
 
 <section class="manage audit">
   <div class="bar">
-    <input type="text" placeholder="Filter by email, event, IP…" bind:value={filter} />
-    <button class="btn" on:click={refresh} disabled={loading}>{loading ? 'Loading…' : 'Refresh'}</button>
-    <span class="muted">Newest first · last 300 events</span>
+    <input type="text" placeholder={$t('audit.filter')} bind:value={filter} />
+    <button class="btn" on:click={refresh} disabled={loading}>{loading ? $t('common.loading') : $t('audit.refresh')}</button>
+    <span class="muted">{$t('audit.note')}</span>
   </div>
   {#if error}<div class="msg error">{error}</div>{/if}
   <div class="table-wrap">
     <table>
-      <thead><tr><th>Time</th><th>Event</th><th>Who</th><th>IP</th><th>Details</th></tr></thead>
+      <thead><tr><th>{$t('audit.time')}</th><th>{$t('audit.event')}</th><th>{$t('audit.who')}</th><th>IP</th><th>{$t('audit.details')}</th></tr></thead>
       <tbody>
         {#each shown as e}
           <tr>
-            <td class="muted nowrap">{e.at ? new Date(e.at).toLocaleString() : ''}</td>
-            <td class:danger={DANGER.has(e.event)}>{LABELS[e.event] || e.event}</td>
+            <td class="muted nowrap">{$fmtDateTime(e.at)}</td>
+            <td class:danger={DANGER.has(e.event)}>{label(e.event)}</td>
             <td>{e.actor ?? ''}</td>
             <td class="muted">{e.ip ?? ''}</td>
             <td class="muted">{details(e.metadata)}</td>
           </tr>
         {:else}
-          <tr><td colspan="5" class="muted">{loading ? 'Loading…' : 'No events'}</td></tr>
+          <tr><td colspan="5" class="muted">{loading ? $t('common.loading') : $t('audit.none')}</td></tr>
         {/each}
       </tbody>
     </table>

@@ -1,5 +1,6 @@
 <script>
   import ItemForm from './ItemForm.svelte'
+  import { t } from '../../i18n.js'
 
   // Generic list editor driven by a field schema (see ItemForm.svelte for the field types).
   // Every add / edit / delete is saved right away through `save(nextItems)`, which writes the
@@ -11,7 +12,7 @@
   export let create = () => ({})
   export let save
   export let single = false // edit one object (e.g. config) instead of a list
-  export let addLabel = '+ Add'
+  export let addLabel = ''
 
   let editing = null // null | index | 'new'
   let draft = null
@@ -48,7 +49,7 @@
       if (f.type === 'lines') out[f.key] = texts[f.key].split('\n').map((s) => s.trim()).filter(Boolean)
       if (f.type === 'numbers') {
         out[f.key] = texts[f.key].split(/[\s,]+/).filter(Boolean).map(Number)
-        if (out[f.key].some((n) => !Number.isInteger(n))) throw new Error(`${f.label}: use whole numbers separated by commas`)
+        if (out[f.key].some((n) => !Number.isInteger(n))) throw new Error($t('ce.wholeNumbers', { label: f.label }))
       }
       if (f.type === 'tags') out[f.key] = out[f.key].filter((t) => t.label?.trim())
     }
@@ -80,16 +81,16 @@
       return
     }
     if (single) {
-      await persist(item, 'Saved')
+      await persist(item, $t('common.saved'))
       return
     }
     const next = editing === 'new' ? [...items, item] : items.map((it, i) => (i === editing ? item : it))
-    if (await persist(next, editing === 'new' ? 'Added' : 'Saved')) close()
+    if (await persist(next, editing === 'new' ? $t('common.added') : $t('common.saved'))) close()
   }
 
   async function remove(index) {
     confirmIndex = null
-    await persist(items.filter((_, i) => i !== index), 'Deleted')
+    await persist(items.filter((_, i) => i !== index), $t('common.deleted'))
   }
 
   $: if (single && items[0] && draft === null) open(items[0], 0)
@@ -108,18 +109,18 @@
     {/if}
   {:else}
     <div class="ce-toolbar">
-      <button class="btn primary" on:click={() => open(create(items), 'new')} disabled={editing === 'new'}>{addLabel}</button>
+      <button class="btn primary" on:click={() => open(create(items), 'new')} disabled={editing === 'new'}>{addLabel || $t('common.addPlus')}</button>
       {#if items.length > 8}
-        <input class="ce-search" type="text" placeholder="Filter…" bind:value={query} />
+        <input class="ce-search" type="text" placeholder={$t('ce.filter')} bind:value={query} />
       {/if}
-      <span class="ce-count">{items.length} item{items.length === 1 ? '' : 's'}</span>
+      <span class="ce-count">{$t('ce.count', { n: items.length })}</span>
     </div>
 
     {#if ok && editing === null}<div class="msg ok">{ok}</div>{/if}
     {#if error && editing === null}<div class="msg error">{error}</div>{/if}
 
     {#if editing === 'new' && draft}
-      <ItemForm {fields} bind:draft bind:texts {saving} {error} submitLabel="Add" on:submit={submit} on:cancel={close} />
+      <ItemForm {fields} bind:draft bind:texts {saving} {error} submitLabel={$t('common.add')} on:submit={submit} on:cancel={close} />
     {/if}
 
     <ul class="ce-list">
@@ -127,16 +128,16 @@
         <li class="ce-row" class:open={editing === index}>
           <div class="ce-row-head">
             <div class="ce-row-text">
-              <div class="ce-title">{itemTitle(item) || '(untitled)'}</div>
+              <div class="ce-title">{itemTitle(item) || $t('ce.untitled')}</div>
               {#if itemMeta(item)}<div class="ce-meta">{itemMeta(item)}</div>{/if}
             </div>
             {#if confirmIndex === index}
-              <span class="ce-confirm">Delete this item?</span>
-              <button class="btn danger" on:click={() => remove(index)} disabled={saving}>Delete</button>
-              <button class="btn" on:click={() => (confirmIndex = null)}>Cancel</button>
+              <span class="ce-confirm">{$t('ce.confirmDelete')}</span>
+              <button class="btn danger" on:click={() => remove(index)} disabled={saving}>{$t('common.delete')}</button>
+              <button class="btn" on:click={() => (confirmIndex = null)}>{$t('common.cancel')}</button>
             {:else if editing !== index}
-              <button class="btn" on:click={() => open(item, index)}>Edit</button>
-              <button class="btn ghost-danger" on:click={() => (confirmIndex = index)}>Delete</button>
+              <button class="btn" on:click={() => open(item, index)}>{$t('common.edit')}</button>
+              <button class="btn ghost-danger" on:click={() => (confirmIndex = index)}>{$t('common.delete')}</button>
             {/if}
           </div>
           {#if editing === index && draft}
@@ -146,7 +147,7 @@
           {/if}
         </li>
       {:else}
-        <li class="ce-empty">{items.length ? 'Nothing matches the filter' : 'Nothing here yet'}</li>
+        <li class="ce-empty">{items.length ? $t('ce.noMatch') : $t('ce.empty')}</li>
       {/each}
     </ul>
   {/if}

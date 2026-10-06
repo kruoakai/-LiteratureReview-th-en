@@ -14,7 +14,9 @@
   import UsersView from './lib/components/UsersView.svelte'
   import AuditLogView from './lib/components/AuditLogView.svelte'
   import ForcePasswordChange from './lib/components/ForcePasswordChange.svelte'
+  import LangToggle from './lib/components/LangToggle.svelte'
   import { me, logout, fetchAppData, can } from './lib/auth.js'
+  import { t, fmtDate } from './lib/i18n.js'
 
   const buildDate = __BUILD_DATE__
 
@@ -78,23 +80,14 @@
   let activeTab = 'papers'
   let sortBy = 'num'
 
-  const baseTabs = [
-    { id: 'papers',   label: 'Papers' },
-    { id: 'compare',  label: 'Comparison' },
-    { id: 'domtbl',   label: 'Domain Tables' },
-    { id: 'gaps',     label: 'Gap Analysis' },
-    { id: 'cite',     label: 'Citations' },
-    { id: 'stack',    label: 'Pipeline' },
-    { id: 'charts',   label: 'Charts' },
-    { id: 'rejected', label: 'Rejected Papers' },
-  ]
+  const baseTabs = ['papers', 'compare', 'domtbl', 'gaps', 'cite', 'stack', 'charts', 'rejected']
   // Tabs follow the RBAC permissions the server sends with the user (see server/permissions.js).
   $: tabs = [
     ...baseTabs,
-    ...(can(user, 'corpus:write') ? [{ id: 'manage', label: 'Manage Data' }] : []),
-    ...(can(user, 'users:read') ? [{ id: 'users', label: 'Users' }] : []),
-    ...(can(user, 'audit:read') ? [{ id: 'audit', label: 'Audit Log' }] : []),
-  ]
+    ...(can(user, 'corpus:write') ? ['manage'] : []),
+    ...(can(user, 'users:read') ? ['users'] : []),
+    ...(can(user, 'audit:read') ? ['audit'] : []),
+  ].map((id) => ({ id, label: $t(`tab.${id}`) }))
 
   $: filtered = papers
     .filter(p => activeDomain === 0 || p.domain === activeDomain)
@@ -128,13 +121,13 @@
 </script>
 
 {#if user === undefined}
-  <div class="auth-loading">Loading…</div>
+  <div class="auth-loading">{$t('common.loading')}</div>
 {:else if user === null}
   <Login on:success={handleLoginSuccess} />
 {:else if user.mustChangePassword}
   <ForcePasswordChange {user} on:changed={handlePasswordChanged} on:logout={handleLogout} />
 {:else if !appData}
-  <div class="auth-loading">Loading data…</div>
+  <div class="auth-loading">{$t('app.loadingData')}</div>
 {:else}
 <div class="layout">
   <!-- ── Sidebar ── -->
@@ -148,20 +141,20 @@
     </div>
 
     <div class="overall-progress">
-      <div class="prog-label">Overall coverage</div>
+      <div class="prog-label">{$t('side.overall')}</div>
       <div class="prog-bar">
         <div class="prog-fill" style="width:{overallPct}%"></div>
       </div>
-      <div class="prog-count">{totalPapers} / {totalTarget} papers ({overallPct}%)</div>
-      <button class="prog-breakdown" on:click={() => activeTab = 'rejected'} title="See Rejected Papers">
-        Read {totalReviewed} · included {totalPapers} · rejected {rejectedOutright} · removed {removedAfterInclusion}
+      <div class="prog-count">{$t('side.count', { n: totalPapers, target: totalTarget, pct: overallPct })}</div>
+      <button class="prog-breakdown" on:click={() => activeTab = 'rejected'} title={$t('side.seeRejected')}>
+        {$t('side.breakdown', { read: totalReviewed, inc: totalPapers, rej: rejectedOutright, rem: removedAfterInclusion })}
       </button>
     </div>
 
     <nav class="domain-nav">
       <button class="domain-btn all" class:active={activeDomain === 0} on:click={() => { activeDomain = 0; activeTab = 'papers' }}>
         <span class="dn-dot" style="background:var(--accent)"></span>
-        <span class="dn-name">All Domains</span>
+        <span class="dn-name">{$t('side.allDomains')}</span>
         <span class="dn-count">{totalPapers}</span>
       </button>
       {#each domains as domain}
@@ -176,7 +169,7 @@
 
     <!-- Views nav -->
     <div class="sidebar-views">
-      <div class="sv-label">Views</div>
+      <div class="sv-label">{$t('side.views')}</div>
       {#each tabs as tab}
         <button class="sv-btn" class:active={activeTab === tab.id} on:click={() => activeTab = tab.id}>
           {tab.label}
@@ -187,16 +180,17 @@
     <div class="sidebar-bottom">
       <button class="account-btn" on:click={() => (showAccount = true)}>
         <span class="account-email">{user.email}</span>
-        <span class="role-chip" class:admin={user.role === 'admin'}>{user.role}</span>
+        <span class="role-chip" class:admin={user.role === 'admin'}>{$t(`role.${user.role}`)}</span>
       </button>
       <div class="sidebar-bottom-row">
-        <button class="theme-toggle" on:click={toggleTheme} title="Toggle light/dark theme" aria-label="Toggle light/dark theme">
+        <button class="theme-toggle" on:click={toggleTheme} title={$t('side.theme')} aria-label={$t('side.theme')}>
           {theme === 'dark' ? '🌙' : '☀️'}
         </button>
-        <button class="logout-btn" on:click={handleLogout}>Sign out</button>
+        <LangToggle />
+        <button class="logout-btn" on:click={handleLogout}>{$t('side.signOut')}</button>
       </div>
-      <div class="footer-line">Updated: {buildDate}</div>
-      <div class="footer-line">{domains.length} domains · {appData.gaps.length} gaps · {Object.keys(appData.citations).length} citations</div>
+      <div class="footer-line">{$t('side.updated', { date: $fmtDate(buildDate) })}</div>
+      <div class="footer-line">{$t('side.stats', { d: domains.length, g: appData.gaps.length, c: Object.keys(appData.citations).length })}</div>
     </div>
   </aside>
 
@@ -208,7 +202,7 @@
         <h1 class="page-title">
           {#if activeTab === 'papers'}
             {#if activeDomain === 0}
-              All Papers <span class="count-badge">{filtered.length}</span>
+              {$t('title.allPapers')} <span class="count-badge">{filtered.length}</span>
             {:else}
               {#each domains.filter(d => d.id === activeDomain) as domain}
                 <span style="color:{domain.color}">D{domain.id}</span>
@@ -217,25 +211,25 @@
               {/each}
             {/if}
           {:else if activeTab === 'compare'}
-            Comparison Table
+            {$t('title.compare')}
           {:else if activeTab === 'domtbl'}
-            Domain Comparison Tables
+            {$t('title.domtbl')}
           {:else if activeTab === 'gaps'}
-            Gap Analysis
+            {$t('title.gaps')}
           {:else if activeTab === 'cite'}
-            Citation Templates
+            {$t('title.cite')}
           {:else if activeTab === 'stack'}
             {config.pipelineTitle}
           {:else if activeTab === 'charts'}
-            Corpus Charts
+            {$t('title.charts')}
           {:else if activeTab === 'manage'}
-            Manage Data
+            {$t('tab.manage')}
           {:else if activeTab === 'users'}
-            Users
+            {$t('tab.users')}
           {:else if activeTab === 'audit'}
-            Audit Log
+            {$t('tab.audit')}
           {:else if activeTab === 'rejected'}
-            Rejected Papers <span class="count-badge">{rejected.length}</span>
+            {$t('tab.rejected')} <span class="count-badge">{rejected.length}</span>
           {/if}
         </h1>
       </div>
@@ -249,7 +243,7 @@
           <input
             class="search-input"
             type="text"
-            placeholder="Search title, author, venue, tags..."
+            placeholder={$t('papers.search')}
             bind:value={searchQuery}
           />
           {#if searchQuery}
@@ -258,16 +252,16 @@
         </div>
 
         <div class="sort-wrap">
-          <label class="sort-label" for="sort">Sort:</label>
+          <label class="sort-label" for="sort">{$t('papers.sort')}</label>
           <select id="sort" class="sort-select" bind:value={sortBy}>
-            <option value="num">Paper #</option>
-            <option value="score">Relevance</option>
-            <option value="year">Year</option>
+            <option value="num">{$t('papers.sortNum')}</option>
+            <option value="score">{$t('col.relevance')}</option>
+            <option value="year">{$t('col.year')}</option>
           </select>
         </div>
 
         <button class="expand-all" on:click={() => expandedId = expandedId ? null : '__all'}>
-          {expandedId ? 'Collapse all' : 'Expand all'}
+          {expandedId ? $t('papers.collapseAll') : $t('papers.expandAll')}
         </button>
       </div>
     {/if}
@@ -276,7 +270,7 @@
     <div class="content">
       {#if activeTab === 'papers'}
         {#if filtered.length === 0}
-          <div class="empty">No papers match "{searchQuery}"</div>
+          <div class="empty">{$t('papers.noMatch', { q: searchQuery })}</div>
         {:else}
           <div class="papers-list">
             {#each filtered as paper (paper.id)}
@@ -412,7 +406,8 @@
     border-top: 1px solid var(--border);
     display: flex; flex-direction: column; gap: 8px;
   }
-  .sidebar-bottom-row { display: flex; align-items: center; gap: 8px; }
+  /* wraps when "Sign out" is too long for one row (the Thai label is) */
+  .sidebar-bottom-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
   .footer-line { font-size: 0.67rem; color: var(--text3); line-height: 1.6; }
 
   /* ── Main ── */

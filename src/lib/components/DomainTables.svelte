@@ -1,10 +1,12 @@
 <script>
   import { downloadWorkbook, sheetName } from '../xlsx.js'
+  import { t } from '../i18n.js'
 
   export let papers
   export let domains
 
-  const DOMAIN_HEADER = ['#', 'Title', 'Authors', 'Venue', 'Year', 'Relevance', 'Caution', 'DOI']
+  // Exports use the current UI language for headers; cell values are the corpus data as entered.
+  $: DOMAIN_HEADER = ['#', $t('col.title'), $t('col.authors'), $t('col.venue'), $t('col.year'), $t('col.relevance'), $t('col.caution'), 'DOI']
 
   $: papersByDomain = domains.map(d => ({
     ...d,
@@ -26,13 +28,13 @@
       DOMAIN_HEADER,
       ...d.rows.map(p => [
         p.num, p.title, p.authors, p.venue, p.year, p.score,
-        p.caution ? 'cite with caution' : '', p.doi || '',
+        p.caution ? $t('dt.cautionCell') : '', p.doi || '',
       ]),
     ]
   }
 
   function summaryAoa() {
-    const header = ['Domain', 'Name', 'Papers Now', 'Target', '% of Target', 'Avg Relevance']
+    const header = [$t('col.domain'), $t('col.name'), $t('dt.papersNow'), $t('col.target'), $t('dt.pctTarget'), $t('dt.avgRelevance')]
     const rows = papersByDomain.map(d => {
       const avg = d.rows.length ? (d.rows.reduce((s, p) => s + p.score, 0) / d.rows.length).toFixed(1) : ''
       return [`D${d.id}`, d.fullLabel, d.rows.length, d.target, d.target ? `${Math.round((d.rows.length / d.target) * 100)}%` : '', avg]
@@ -42,7 +44,7 @@
 
   function exportAll() {
     downloadWorkbook('domain-tables.xlsx', [
-      { name: 'Summary', rows: summaryAoa() },
+      { name: $t('dt.summary'), rows: summaryAoa() },
       ...papersByDomain.map(d => ({ name: sheetName(d.label, `D${d.id}`), rows: domainAoa(d) })),
     ])
   }
@@ -57,10 +59,10 @@
 <section class="dt-section">
   <div class="dt-header">
     <div>
-      <h2>Domain Comparison Tables</h2>
-      <p class="subtitle">Papers grouped by domain — export any table to a real .xlsx workbook.</p>
+      <h2>{$t('title.domtbl')}</h2>
+      <p class="subtitle">{$t('dt.subtitle')}</p>
     </div>
-    <button class="export-btn primary" on:click={exportAll}>⬇ Export All to Excel (.xlsx)</button>
+    <button class="export-btn primary" on:click={exportAll}>{$t('dt.exportAll')}</button>
   </div>
 
   {#each papersByDomain as d}
@@ -73,7 +75,7 @@
             {d.rows.length} / {d.target}
           </span>
         </div>
-        <button class="export-btn" on:click={() => exportDomain(d)}>⬇ Export sheet</button>
+        <button class="export-btn" on:click={() => exportDomain(d)}>{$t('dt.exportSheet')}</button>
       </div>
       <p class="domain-desc">{d.description}</p>
 
@@ -82,11 +84,11 @@
           <thead>
             <tr>
               <th class="col-num">#</th>
-              <th class="col-title">Title</th>
-              <th class="col-authors">Authors</th>
-              <th class="col-venue">Venue</th>
-              <th class="col-year">Year</th>
-              <th class="col-score">Relevance</th>
+              <th class="col-title">{$t('col.title')}</th>
+              <th class="col-authors">{$t('col.authors')}</th>
+              <th class="col-venue">{$t('col.venue')}</th>
+              <th class="col-year">{$t('col.year')}</th>
+              <th class="col-score">{$t('col.relevance')}</th>
             </tr>
           </thead>
           <tbody>
@@ -95,7 +97,7 @@
                 <td class="col-num mono">{p.num}</td>
                 <td class="col-title">
                   {p.title}
-                  {#if p.caution}<span class="badge caution">caution</span>{/if}
+                  {#if p.caution}<span class="badge caution">{$t('dt.cautionBadge')}</span>{/if}
                 </td>
                 <td class="col-authors">{p.authors}</td>
                 <td class="col-venue">{p.venue}</td>
@@ -104,7 +106,7 @@
               </tr>
             {/each}
             {#if d.rows.length === 0}
-              <tr><td colspan="6" class="empty-row">No papers in this domain yet</td></tr>
+              <tr><td colspan="6" class="empty-row">{$t('dt.empty')}</td></tr>
             {/if}
           </tbody>
         </table>
@@ -112,10 +114,7 @@
     </div>
   {/each}
 
-  <p class="table-note">
-    "Export All" produces one workbook with a Summary sheet + one sheet per domain.
-    Each domain block also has its own single-sheet export.
-  </p>
+  <p class="table-note">{$t('dt.note')}</p>
 </section>
 
 <style>

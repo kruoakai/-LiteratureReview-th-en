@@ -1,4 +1,6 @@
 <script>
+  import { t } from '../i18n.js'
+
   export let citations
   export let papers
   export let domains
@@ -33,8 +35,8 @@
 
 <section class="cv-section">
   <div class="cv-header">
-    <h2>Citation Templates</h2>
-    <p class="subtitle">Ready-to-paste citation sentences. Click Copy on any block.</p>
+    <h2>{$t('title.cite')}</h2>
+    <p class="subtitle">{$t('cite.subtitle')}</p>
   </div>
 
   <div class="citations-list">
@@ -60,7 +62,7 @@
             class:copied={copied === c.paperId}
             on:click={() => copyText(c.text, c.paperId)}
           >
-            {copied === c.paperId ? '✓ Copied' : 'Copy'}
+            {copied === c.paperId ? $t('cite.copied') : $t('cite.copy')}
           </button>
         </div>
       </div>

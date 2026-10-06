@@ -124,11 +124,36 @@ async function signInFirstTime(email, password) {
 const tabs = () => js(`return [...document.querySelectorAll('.sv-btn')].map(b => b.textContent.trim())`)
 
 try {
+  // The UI starts in Thai. Check that, then switch to English: the choice is kept in localStorage,
+  // so the rest of the test (which finds buttons by their English text) runs in English.
+  console.log('\n=== language ===')
+  await cdp('Page.navigate', { url: BASE })
+  await waitFor(`document.querySelector('input[type=email]')`, 'sign-in form')
+  ok((await js(`return document.documentElement.lang`)) === 'th', 'UI language defaults to Thai')
+  ok(await js(`return [...document.querySelectorAll('button')].some(b => b.textContent.trim() === 'ดำเนินการต่อ')`), 'sign-in button is in Thai')
+  await fill(`document.querySelector('input[type=email]')`, 'nobody@example.com')
+  await fill(`document.querySelector('input[type=password]')`, 'wrong-password')
+  await clickText('button', 'ดำเนินการต่อ')
+  await waitFor(`document.querySelector('.auth-error')`, 'sign-in error')
+  ok((await js(`return document.querySelector('.auth-error').textContent`)) === 'อีเมลหรือรหัสผ่านไม่ถูกต้อง', 'server error message is shown in Thai')
+  consoleErrors.length = 0 // the browser logs that deliberate 401; the final console check is for real errors
+  await clickText('.lang-btn', 'EN')
+  ok((await js(`return document.documentElement.lang`)) === 'en' && (await text()).includes('Continue'), 'language toggle switches the sign-in screen to English')
+
   console.log('\n=== admin@example.com ===')
   await signInFirstTime('admin@example.com', 'Admin@12345')
   const t = await tabs()
   ok(['Manage Data', 'Users', 'Audit Log'].every((x) => t.includes(x)), 'admin sees Manage Data, Users and Audit Log tabs', t.join(', '))
   ok((await js(`return document.querySelectorAll('.papers-list > *').length`)) === 5, 'Papers view lists the 5 example papers')
+
+  // Thai in the main app: translated tabs and Buddhist-era (พ.ศ.) dates, then back to English.
+  await clickText('.sidebar .lang-btn', 'ไทย')
+  const thTabs = await tabs()
+  ok(thTabs.includes('จัดการข้อมูล') && thTabs.includes('บทความที่คัดออก'), 'sidebar tabs are in Thai', thTabs.join(', '))
+  const footer = await js(`return [...document.querySelectorAll('.footer-line')].map(e => e.textContent).join(' ')`)
+  ok(footer.includes(String(new Date().getFullYear() + 543)), 'dates use the Buddhist era in Thai', footer)
+  await clickText('.sidebar .lang-btn', 'EN')
+  ok((await tabs()).includes('Manage Data'), 'sidebar switches back to English')
 
   // Every read-only view renders
   for (const view of ['Comparison', 'Domain Tables', 'Gap Analysis', 'Citations', 'Pipeline', 'Charts', 'Rejected Papers']) {

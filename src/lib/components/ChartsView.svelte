@@ -1,4 +1,6 @@
 <script>
+  import { t } from '../i18n.js'
+
   export let papers
   export let domains
 
@@ -100,25 +102,25 @@
 
 <section class="charts-section">
   <div class="charts-header">
-    <h2>Corpus Charts</h2>
-    <p class="subtitle">Papers per domain and the spread of relevance scores across the corpus ({totalPapers}/{totalTarget} papers)</p>
+    <h2>{$t('title.charts')}</h2>
+    <p class="subtitle">{$t('ch.subtitle', { n: totalPapers, target: totalTarget })}</p>
   </div>
 
   <!-- ── Chart 1: papers per domain ── -->
   <div class="chart-card">
     <div class="chart-card-head">
       <div>
-        <h3>Papers per Domain</h3>
-        <p class="chart-sub">Solid bar = current count · dashed line = target ({totalTarget} papers in total)</p>
+        <h3>{$t('ch.perDomain')}</h3>
+        <p class="chart-sub">{$t('ch.perDomainSub', { target: totalTarget })}</p>
       </div>
       <button class="table-toggle" on:click={() => domainTable = !domainTable}>
-        {domainTable ? 'Chart view' : 'Table view'}
+        {domainTable ? $t('ch.chartView') : $t('ch.tableView')}
       </button>
     </div>
 
     {#if !domainTable}
       <div class="chart-svg-wrap">
-        <svg viewBox="0 0 {W} {H}" class="chart-svg" role="img" aria-label="Papers per domain bar chart">
+        <svg viewBox="0 0 {W} {H}" class="chart-svg" role="img" aria-label={$t('ch.domainAria')}>
           {#each domainGrid as g}
             <line x1={padL} x2={W - padR} y1={yFor(g, domainNiceMax)} y2={yFor(g, domainNiceMax)} class="gridline" />
             <text x={padL - 8} y={yFor(g, domainNiceMax) + 3} class="axis-label" text-anchor="end">{g}</text>
@@ -139,7 +141,7 @@
               on:blur={hideHover}
               tabindex="0"
               role="button"
-              aria-label="{b.fullName}: {b.count} of {b.target} papers"
+              aria-label={$t('ch.barAria', { name: b.fullName, n: b.count, target: b.target })}
             />
             <text x={b.cx} y={b.y - 6} class="value-label" text-anchor="middle">{b.count}</text>
             <text x={b.cx} y={H - padB + 16} class="cat-label" text-anchor="middle">{b.name}</text>
@@ -151,13 +153,13 @@
           {@const d = domainBarsWithTarget[hover.index]}
           <div class="tooltip" style="left:{hover.x}px; top:{hover.y}px;">
             <div class="tt-title" style="color:{d.color}">{d.fullName}</div>
-            <div class="tt-row">{d.count} / {d.target} papers ({Math.round((d.count / d.target) * 100)}% of target)</div>
+            <div class="tt-row">{$t('ch.domainTip', { n: d.count, target: d.target, pct: Math.round((d.count / d.target) * 100) })}</div>
           </div>
         {/if}
       </div>
     {:else}
       <table class="data-table">
-        <thead><tr><th>Domain</th><th>Papers</th><th>Target</th><th>%</th></tr></thead>
+        <thead><tr><th>{$t('col.domain')}</th><th>{$t('col.papers')}</th><th>{$t('col.target')}</th><th>%</th></tr></thead>
         <tbody>
           {#each domainData as d}
             <tr>
@@ -176,17 +178,17 @@
   <div class="chart-card">
     <div class="chart-card-head">
       <div>
-        <h3>Relevance Score Distribution</h3>
-        <p class="chart-sub">Papers per relevance score (1–10), {totalPapers} papers in the corpus</p>
+        <h3>{$t('ch.scoreDist')}</h3>
+        <p class="chart-sub">{$t('ch.scoreSub', { n: totalPapers })}</p>
       </div>
       <button class="table-toggle" on:click={() => scoreTable = !scoreTable}>
-        {scoreTable ? 'Chart view' : 'Table view'}
+        {scoreTable ? $t('ch.chartView') : $t('ch.tableView')}
       </button>
     </div>
 
     {#if !scoreTable}
       <div class="chart-svg-wrap">
-        <svg viewBox="0 0 {W} {H}" class="chart-svg" role="img" aria-label="Relevance score distribution bar chart">
+        <svg viewBox="0 0 {W} {H}" class="chart-svg" role="img" aria-label={$t('ch.scoreAria')}>
           {#each scoreGrid as g}
             <line x1={padL} x2={W - padR} y1={yFor(g, scoreNiceMax)} y2={yFor(g, scoreNiceMax)} class="gridline" />
             <text x={padL - 8} y={yFor(g, scoreNiceMax) + 3} class="axis-label" text-anchor="end">{g}</text>
@@ -204,7 +206,7 @@
               on:blur={hideHover}
               tabindex="0"
               role="button"
-              aria-label="Score {b.score}: {b.count} papers"
+              aria-label={$t('ch.scoreBarAria', { s: b.score, n: b.count })}
             />
             {#if b.count > 0}
               <text x={b.cx} y={b.y - 6} class="value-label" text-anchor="middle">{b.count}</text>
@@ -216,14 +218,14 @@
         {#if hover && hover.chart === 'score'}
           {@const d = scoreBars[hover.index]}
           <div class="tooltip" style="left:{hover.x}px; top:{hover.y}px;">
-            <div class="tt-title" style="color:{d.color}">Score {d.score}/10</div>
-            <div class="tt-row">{d.count} papers ({Math.round((d.count / totalPapers) * 100)}% of corpus)</div>
+            <div class="tt-title" style="color:{d.color}">{$t('ch.scoreTip', { s: d.score })}</div>
+            <div class="tt-row">{$t('ch.scoreTipRow', { n: d.count, pct: Math.round((d.count / totalPapers) * 100) })}</div>
           </div>
         {/if}
       </div>
     {:else}
       <table class="data-table">
-        <thead><tr><th>Score</th><th>Papers</th><th>%</th></tr></thead>
+        <thead><tr><th>{$t('ch.score')}</th><th>{$t('col.papers')}</th><th>%</th></tr></thead>
         <tbody>
           {#each scoreData as d}
             <tr>

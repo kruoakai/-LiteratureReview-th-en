@@ -2,6 +2,7 @@
   import { createEventDispatcher } from 'svelte'
   import { changePassword, regenerateBackupCodes } from '../auth.js'
   import BackupCodes from './BackupCodes.svelte'
+  import { t } from '../i18n.js'
 
   export let user
 
@@ -23,13 +24,13 @@
     pwError = ''
     pwOk = ''
     if (nextPassword !== confirmPassword) {
-      pwError = 'New passwords do not match'
+      pwError = $t('pw.mismatch')
       return
     }
     pwSaving = true
     try {
       const updated = await changePassword(currentPassword, nextPassword)
-      pwOk = 'Password updated. Your other sessions were signed out.'
+      pwOk = $t('acct.pwOk')
       currentPassword = ''
       nextPassword = ''
       confirmPassword = ''
@@ -63,49 +64,49 @@
 <div class="overlay" on:click|self={() => dispatch('close')}>
   <div class="panel">
     <div class="panel-header">
-      <h2>Account</h2>
-      <button class="close-btn" on:click={() => dispatch('close')} aria-label="Close">✕</button>
+      <h2>{$t('acct.title')}</h2>
+      <button class="close-btn" on:click={() => dispatch('close')} aria-label={$t('common.close')}>✕</button>
     </div>
 
     <section class="section">
-      <div class="section-title">Signed in as</div>
+      <div class="section-title">{$t('acct.signedInAs')}</div>
       <div class="you-row">
         <span class="you-email">{user.email}</span>
-        <span class="role-badge" class:admin={user.role === 'admin'}>{user.role}</span>
+        <span class="role-badge" class:admin={user.role === 'admin'}>{$t(`role.${user.role}`)}</span>
       </div>
     </section>
 
     <section class="section">
-      <div class="section-title">Two-factor authentication</div>
+      <div class="section-title">{$t('acct.twofa')}</div>
       <div class="you-row">
-        <span>✓ On (authenticator app)</span>
-        <span class="muted">{user.backupCodesRemaining} backup codes left</span>
+        <span>{$t('acct.on')}</span>
+        <span class="muted">{$t('acct.codesLeft', { n: user.backupCodesRemaining })}</span>
       </div>
       {#if newCodes.length}
-        <p class="hint">Your new backup codes. The old ones no longer work. Save these now; they won't be shown again.</p>
+        <p class="hint">{$t('acct.newCodesHint')}</p>
         <BackupCodes codes={newCodes} />
       {:else if confirmingCodes}
-        <p class="hint">This replaces all your current backup codes.</p>
+        <p class="hint">{$t('acct.replaceHint')}</p>
         <div class="row">
-          <button class="btn" on:click={makeNewCodes} disabled={codesSaving}>{codesSaving ? 'Creating…' : 'Create new codes'}</button>
-          <button class="btn ghost" on:click={() => (confirmingCodes = false)}>Cancel</button>
+          <button class="btn" on:click={makeNewCodes} disabled={codesSaving}>{codesSaving ? $t('common.creating') : $t('acct.createCodes')}</button>
+          <button class="btn ghost" on:click={() => (confirmingCodes = false)}>{$t('common.cancel')}</button>
         </div>
       {:else}
-        <button class="btn ghost" on:click={() => (confirmingCodes = true)}>New backup codes</button>
+        <button class="btn ghost" on:click={() => (confirmingCodes = true)}>{$t('acct.newCodes')}</button>
       {/if}
       {#if codesError}<div class="msg error">{codesError}</div>{/if}
-      <p class="hint">Lost your authenticator app and your backup codes? Ask an admin to reset your 2FA, then set it up again at your next sign-in.</p>
+      <p class="hint">{$t('acct.lostHint')}</p>
     </section>
 
     <section class="section">
-      <div class="section-title">Change my password</div>
+      <div class="section-title">{$t('acct.changePw')}</div>
       <form class="stacked-form" on:submit|preventDefault={submitPasswordChange}>
-        <input type="password" placeholder="Current password" bind:value={currentPassword} autocomplete="current-password" required maxlength="128" />
-        <input type="password" placeholder="New password (8–128 characters)" bind:value={nextPassword} autocomplete="new-password" required minlength="8" maxlength="128" />
-        <input type="password" placeholder="Confirm new password" bind:value={confirmPassword} autocomplete="new-password" required minlength="8" maxlength="128" />
+        <input type="password" placeholder={$t('pw.current')} bind:value={currentPassword} autocomplete="current-password" required maxlength="128" />
+        <input type="password" placeholder={$t('pw.new')} bind:value={nextPassword} autocomplete="new-password" required minlength="8" maxlength="128" />
+        <input type="password" placeholder={$t('pw.confirm')} bind:value={confirmPassword} autocomplete="new-password" required minlength="8" maxlength="128" />
         {#if pwError}<div class="msg error">{pwError}</div>{/if}
         {#if pwOk}<div class="msg ok">{pwOk}</div>{/if}
-        <button class="btn" type="submit" disabled={pwSaving}>{pwSaving ? 'Saving…' : 'Update password'}</button>
+        <button class="btn" type="submit" disabled={pwSaving}>{pwSaving ? $t('common.saving') : $t('acct.update')}</button>
       </form>
     </section>
   </div>

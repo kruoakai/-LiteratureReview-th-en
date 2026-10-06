@@ -1,14 +1,15 @@
 <script>
   import { onMount } from 'svelte'
   import { listUsers, createUser, updateUser, resetUserPassword, resetUserTwoFactor, deleteUser } from '../auth.js'
+  import { t, fmtDateTime } from '../i18n.js'
 
   export let user // the signed-in user
   export let canWrite = false // users:write; managers can only look
 
-  const ROLES = [
-    { value: 'user', label: 'User: read only' },
-    { value: 'manager', label: 'Manager: edit data, view users' },
-    { value: 'admin', label: 'Admin: everything' },
+  $: ROLES = [
+    { value: 'user', label: $t('users.roleUser') },
+    { value: 'manager', label: $t('users.roleManager') },
+    { value: 'admin', label: $t('users.roleAdmin') },
   ]
 
   let users = []
@@ -70,7 +71,7 @@
     creating = true
     try {
       const created = await createUser(newEmail.trim(), newRole, newPassword)
-      ok = `Created ${created.email}. Give them the temporary password. They'll set up 2FA and choose their own password at first sign-in.`
+      ok = $t('users.created', { email: created.email })
       newEmail = ''
       newRole = 'user'
       newPassword = ''
@@ -82,14 +83,13 @@
     }
   }
 
-  const fmt = (iso) => (iso ? new Date(iso).toLocaleString() : 'never')
+  $: fmt = (iso) => (iso ? $fmtDateTime(iso) : $t('users.never'))
 </script>
 
 <section class="manage users">
   <p class="intro">
-    Every account must use two-factor authentication. An admin can't switch it off for anyone, only
-    <strong>reset</strong> it, which makes the person set it up again at their next sign-in.
-    {#if !canWrite}You can view users; only admins can change them.{/if}
+    {$t('users.intro1')} <strong>{$t('users.intro2')}</strong> {$t('users.intro3')}
+    {#if !canWrite}{$t('users.viewOnly')}{/if}
   </p>
 
   {#if error}<div class="msg error">{error}</div>{/if}
@@ -98,7 +98,7 @@
   <div class="table-wrap">
     <table>
       <thead>
-        <tr><th>Email</th><th>Role</th><th>Status</th><th>2FA</th><th>Last sign-in</th>{#if canWrite}<th>Actions</th>{/if}</tr>
+        <tr><th>{$t('login.email')}</th><th>{$t('users.role')}</th><th>{$t('users.status')}</th><th>2FA</th><th>{$t('users.lastSignIn')}</th>{#if canWrite}<th>{$t('users.actions')}</th>{/if}</tr>
       </thead>
       <tbody>
         {#each users as u (u.id)}
@@ -106,50 +106,50 @@
           <tr class:disabled={u.status === 'disabled'}>
             <td>
               {u.email}
-              {#if self}<span class="chip">you</span>{/if}
-              {#if u.mustChangePassword}<span class="chip warn" title="Signed in with a temporary password and hasn't replaced it yet">temp password</span>{/if}
+              {#if self}<span class="chip">{$t('users.you')}</span>{/if}
+              {#if u.mustChangePassword}<span class="chip warn" title={$t('users.tempTitle')}>{$t('users.tempChip')}</span>{/if}
             </td>
             <td>
               {#if canWrite && !self}
-                <select value={u.role} disabled={busy === u.id} on:change={(e) => act(u.id, () => updateUser(u.id, { role: e.target.value }), `${u.email} is now ${e.target.value}`)}>
-                  {#each ROLES as r}<option value={r.value}>{r.value}</option>{/each}
+                <select value={u.role} disabled={busy === u.id} on:change={(e) => act(u.id, () => updateUser(u.id, { role: e.target.value }), $t('users.roleChanged', { email: u.email, role: $t(`role.${e.target.value}`) }))}>
+                  {#each ROLES as r}<option value={r.value}>{$t(`role.${r.value}`)}</option>{/each}
                 </select>
               {:else}
-                <span class="chip role-{u.role}">{u.role}</span>
+                <span class="chip role-{u.role}">{$t(`role.${u.role}`)}</span>
               {/if}
             </td>
             <td>
-              {#if u.locked}<span class="chip danger" title="Too many wrong passwords. Resetting the password unlocks it.">locked</span>
-              {:else if u.status === 'disabled'}<span class="chip danger">disabled</span>
-              {:else}<span class="chip ok">active</span>{/if}
+              {#if u.locked}<span class="chip danger" title={$t('users.lockedTitle')}>{$t('users.locked')}</span>
+              {:else if u.status === 'disabled'}<span class="chip danger">{$t('users.disabled')}</span>
+              {:else}<span class="chip ok">{$t('users.active')}</span>{/if}
             </td>
-            <td>{#if u.totpEnabled}<span class="chip ok">on</span> <span class="muted">{u.backupCodesRemaining} codes</span>{:else}<span class="chip warn">setup at next sign-in</span>{/if}</td>
+            <td>{#if u.totpEnabled}<span class="chip ok">{$t('users.on')}</span> <span class="muted">{$t('users.codes', { n: u.backupCodesRemaining })}</span>{:else}<span class="chip warn">{$t('users.setupNext')}</span>{/if}</td>
             <td class="muted">{fmt(u.lastLoginAt)}</td>
             {#if canWrite}
               <td class="actions">
                 {#if pending?.id === u.id}
                   {#if pending.action === 'password'}
-                    <input class="temp" bind:value={tempPassword} aria-label="Temporary password" />
-                    <button class="btn primary" disabled={busy === u.id} on:click={() => act(u.id, () => resetUserPassword(u.id, tempPassword), `Password reset for ${u.email}. Temporary password: ${tempPassword}`)}>Reset</button>
+                    <input class="temp" bind:value={tempPassword} aria-label={$t('pw.temp')} />
+                    <button class="btn primary" disabled={busy === u.id} on:click={() => act(u.id, () => resetUserPassword(u.id, tempPassword), $t('users.pwReset', { email: u.email, pw: tempPassword }))}>{$t('users.reset')}</button>
                   {:else if pending.action === '2fa'}
-                    <span class="confirm">Reset 2FA and sign them out?</span>
-                    <button class="btn danger" disabled={busy === u.id} on:click={() => act(u.id, () => resetUserTwoFactor(u.id), `2FA reset for ${u.email}. They'll set it up again at next sign-in.`)}>Reset 2FA</button>
+                    <span class="confirm">{$t('users.confirm2fa')}</span>
+                    <button class="btn danger" disabled={busy === u.id} on:click={() => act(u.id, () => resetUserTwoFactor(u.id), $t('users.twofaReset', { email: u.email }))}>{$t('users.reset2fa')}</button>
                   {:else}
-                    <span class="confirm">Delete this user?</span>
-                    <button class="btn danger" disabled={busy === u.id} on:click={() => act(u.id, () => deleteUser(u.id), `Deleted ${u.email}`)}>Delete</button>
+                    <span class="confirm">{$t('users.confirmDelete')}</span>
+                    <button class="btn danger" disabled={busy === u.id} on:click={() => act(u.id, () => deleteUser(u.id), $t('users.deleted', { email: u.email }))}>{$t('common.delete')}</button>
                   {/if}
-                  <button class="btn" on:click={() => (pending = null)}>Cancel</button>
+                  <button class="btn" on:click={() => (pending = null)}>{$t('common.cancel')}</button>
                 {:else if !self}
                   {#if u.status === 'active'}
-                    <button class="btn" disabled={busy === u.id} on:click={() => act(u.id, () => updateUser(u.id, { status: 'disabled' }), `Disabled ${u.email} and signed them out`)}>Disable</button>
+                    <button class="btn" disabled={busy === u.id} on:click={() => act(u.id, () => updateUser(u.id, { status: 'disabled' }), $t('users.disabledMsg', { email: u.email }))}>{$t('users.disable')}</button>
                   {:else}
-                    <button class="btn" disabled={busy === u.id} on:click={() => act(u.id, () => updateUser(u.id, { status: 'active' }), `Enabled ${u.email}`)}>Enable</button>
+                    <button class="btn" disabled={busy === u.id} on:click={() => act(u.id, () => updateUser(u.id, { status: 'active' }), $t('users.enabledMsg', { email: u.email }))}>{$t('users.enable')}</button>
                   {/if}
-                  <button class="btn" on:click={() => ask(u.id, 'password')}>Reset password</button>
-                  <button class="btn" on:click={() => ask(u.id, '2fa')}>Reset 2FA</button>
-                  <button class="btn ghost-danger" on:click={() => ask(u.id, 'delete')}>Delete</button>
+                  <button class="btn" on:click={() => ask(u.id, 'password')}>{$t('users.resetPw')}</button>
+                  <button class="btn" on:click={() => ask(u.id, '2fa')}>{$t('users.reset2fa')}</button>
+                  <button class="btn ghost-danger" on:click={() => ask(u.id, 'delete')}>{$t('common.delete')}</button>
                 {:else}
-                  <span class="muted">Use the account panel</span>
+                  <span class="muted">{$t('users.useAccount')}</span>
                 {/if}
               </td>
             {/if}
@@ -161,27 +161,27 @@
 
   {#if canWrite}
     <form class="create" on:submit|preventDefault={submitCreate}>
-      <h3>Add a user</h3>
+      <h3>{$t('users.add')}</h3>
       <div class="create-row">
         <label class="f">
-          <span>Email</span>
+          <span>{$t('login.email')}</span>
           <input type="email" bind:value={newEmail} autocomplete="off" required />
         </label>
         <label class="f">
-          <span>Role</span>
+          <span>{$t('users.role')}</span>
           <select bind:value={newRole}>
             {#each ROLES as r}<option value={r.value}>{r.label}</option>{/each}
           </select>
         </label>
         <label class="f">
-          <span>Temporary password</span>
+          <span>{$t('pw.temp')}</span>
           <div class="pw-row">
             <input bind:value={newPassword} autocomplete="new-password" required minlength="8" maxlength="128" />
-            <button type="button" class="btn" on:click={() => (newPassword = generatePassword())}>Generate</button>
+            <button type="button" class="btn" on:click={() => (newPassword = generatePassword())}>{$t('users.generate')}</button>
           </div>
         </label>
       </div>
-      <button class="btn primary" type="submit" disabled={creating}>{creating ? 'Creating…' : 'Create user'}</button>
+      <button class="btn primary" type="submit" disabled={creating}>{creating ? $t('common.creating') : $t('users.create')}</button>
     </form>
   {/if}
 </section>

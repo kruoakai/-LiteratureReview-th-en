@@ -1,3 +1,5 @@
+import { translateServerError } from './i18n.js'
+
 async function request(url, options = {}) {
   const res = await fetch(url, {
     credentials: 'include',
@@ -11,7 +13,7 @@ async function request(url, options = {}) {
     data = null
   }
   if (!res.ok) {
-    const err = new Error((data && data.error) || `Request failed (${res.status})`)
+    const err = new Error(translateServerError((data && data.error) || `Request failed (${res.status})`))
     err.status = res.status
     err.code = data?.code
     throw err

@@ -1,4 +1,6 @@
 <script>
+  import { t } from '../i18n.js'
+
   export let gaps
 
   const priorityColor = p => ({
@@ -8,17 +10,13 @@
     low: '#6c8fff',
   }[p] || '#9da5cc')
 
-  const priorityLabel = p => ({
-    critical: '🔴 Critical',
-    high: '🟠 High',
-    medium: '🟡 Medium',
-    low: '🔵 Low',
-  }[p] || p)
+  const PRIORITY_ICON = { critical: '🔴', high: '🟠', medium: '🟡', low: '🔵' }
+  $: priorityLabel = p => (PRIORITY_ICON[p] ? `${PRIORITY_ICON[p]} ${$t(`gap.p.${p}`)}` : p)
 
-  const statusMeta = {
-    open:    { label: 'Still Open',      color: '#ef4444', bg: 'rgba(239,68,68,0.1)',    border: 'rgba(239,68,68,0.3)'    },
-    partial: { label: 'Partially Closed', color: '#fbbf24', bg: 'rgba(251,191,36,0.1)',  border: 'rgba(251,191,36,0.3)'   },
-    closed:  { label: 'Covered — Stop',  color: '#34d399', bg: 'rgba(52,211,153,0.1)',   border: 'rgba(52,211,153,0.3)'   },
+  $: statusMeta = {
+    open:    { label: $t('gap.s.open'),    color: '#ef4444', bg: 'rgba(239,68,68,0.1)',    border: 'rgba(239,68,68,0.3)'    },
+    partial: { label: $t('gap.s.partial'), color: '#fbbf24', bg: 'rgba(251,191,36,0.1)',  border: 'rgba(251,191,36,0.3)'   },
+    closed:  { label: $t('gap.s.closed'),  color: '#34d399', bg: 'rgba(52,211,153,0.1)',   border: 'rgba(52,211,153,0.3)'   },
   }
 
   let filter = 'all'
@@ -29,8 +27,8 @@
 
 <section class="gap-section">
   <div class="gap-header">
-    <h2>Research Gap Analysis</h2>
-    <p class="subtitle">{gaps.length} gaps. Each status says whether the gap is still open, partly covered by the literature, or closed with enough evidence.</p>
+    <h2>{$t('gap.title')}</h2>
+    <p class="subtitle">{$t('gap.subtitle', { n: gaps.length })}</p>
   </div>
 
   <!-- Status summary row -->
@@ -45,7 +43,7 @@
   </div>
 
   <div class="filter-row">
-    {#each [['all','All'],['open_partial','Open / Partial'],['critical','Critical'],['high','High'],['medium','Medium'],['closed','Closed']] as [f, label]}
+    {#each [['all', $t('common.all')], ['open_partial', $t('gap.f.openPartial')], ['critical', $t('gap.p.critical')], ['high', $t('gap.p.high')], ['medium', $t('gap.p.medium')], ['closed', $t('gap.f.closed')]] as [f, label]}
       <button
         class="filter-btn"
         class:active={filter === f}
@@ -71,7 +69,7 @@
 
           <div class="two-col">
             <div class="sub-block">
-              <div class="sub-label" style="color:{pColor}">Evidence in corpus</div>
+              <div class="sub-label" style="color:{pColor}">{$t('gap.evidence')}</div>
               <ul class="evidence-list">
                 {#each gap.evidence as ev}
                   <li>{ev}</li>
@@ -81,7 +79,7 @@
 
             <div class="sub-block">
               <div class="sub-label" style="color:{pColor}">
-                {gap.status === 'closed' ? 'Action' : 'Opportunity'}
+                {gap.status === 'closed' ? $t('gap.action') : $t('gap.opportunity')}
               </div>
               <p class="opportunity">{gap.opportunity}</p>
             </div>
@@ -89,7 +87,7 @@
 
           {#if gap.searchGuidance}
             <div class="search-guidance">
-              <span class="sg-label">Search guidance</span>
+              <span class="sg-label">{$t('gap.search')}</span>
               <span class="sg-text">{gap.searchGuidance}</span>
             </div>
           {/if}

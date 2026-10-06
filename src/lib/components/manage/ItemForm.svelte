@@ -1,20 +1,21 @@
 <script>
   import { createEventDispatcher } from 'svelte'
+  import { t } from '../../i18n.js'
 
   export let fields = []
   export let draft
   export let texts = {}
   export let saving = false
   export let error = ''
-  export let submitLabel = 'Save'
+  export let submitLabel = ''
   export let cancellable = true
 
   const dispatch = createEventDispatcher()
 
-  const TAG_TYPES = [
-    { value: 'yes', label: 'Positive' },
-    { value: 'warn', label: 'Warning' },
-    { value: '', label: 'Neutral' },
+  $: TAG_TYPES = [
+    { value: 'yes', label: $t('if.positive') },
+    { value: 'warn', label: $t('if.warning') },
+    { value: '', label: $t('if.neutral') },
   ]
 
   // Replace the whole object rather than assigning draft[key]: in Svelte 5's legacy mode a member
@@ -54,21 +55,21 @@
               <input id="if-{f.key}" type="text" bind:value={draft[f.key]} />
             </div>
           {:else if f.type === 'lines'}
-            <textarea id="if-{f.key}" rows={f.rows || 3} bind:value={texts[f.key]} placeholder={f.placeholder || 'One per line'}></textarea>
+            <textarea id="if-{f.key}" rows={f.rows || 3} bind:value={texts[f.key]} placeholder={f.placeholder || $t('if.onePerLine')}></textarea>
           {:else if f.type === 'numbers'}
-            <input id="if-{f.key}" type="text" bind:value={texts[f.key]} placeholder={f.placeholder || 'e.g. 1, 2, 5'} />
+            <input id="if-{f.key}" type="text" bind:value={texts[f.key]} placeholder={f.placeholder || $t('if.numbersPh')} />
           {:else if f.type === 'tags'}
             <div class="tags">
               {#each draft[f.key] as tag, i}
                 <div class="tag-row">
-                  <input type="text" bind:value={tag.label} placeholder="Tag label" aria-label="Tag label" />
-                  <select bind:value={tag.type} aria-label="Tag type">
+                  <input type="text" bind:value={tag.label} placeholder={$t('if.tagLabel')} aria-label={$t('if.tagLabel')} />
+                  <select bind:value={tag.type} aria-label={$t('if.tagType')}>
                     {#each TAG_TYPES as t}<option value={t.value}>{t.label}</option>{/each}
                   </select>
                   <button type="button" class="btn ghost-danger" on:click={() => removeTag(f.key, i)}>✕</button>
                 </div>
               {/each}
-              <button type="button" class="btn" on:click={() => addTag(f.key)}>+ Tag</button>
+              <button type="button" class="btn" on:click={() => addTag(f.key)}>{$t('if.addTag')}</button>
             </div>
           {:else}
             <input id="if-{f.key}" type="text" bind:value={draft[f.key]} placeholder={f.placeholder || ''} required={f.required} />
@@ -82,8 +83,8 @@
   {#if error}<div class="msg error">{error}</div>{/if}
 
   <div class="if-actions">
-    <button class="btn primary" type="submit" disabled={saving}>{saving ? 'Saving…' : submitLabel}</button>
-    {#if cancellable}<button class="btn" type="button" on:click={() => dispatch('cancel')}>Cancel</button>{/if}
+    <button class="btn primary" type="submit" disabled={saving}>{saving ? $t('common.saving') : submitLabel || $t('common.save')}</button>
+    {#if cancellable}<button class="btn" type="button" on:click={() => dispatch('cancel')}>{$t('common.cancel')}</button>{/if}
   </div>
 </form>
 

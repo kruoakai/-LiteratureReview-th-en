@@ -1,10 +1,12 @@
 <script>
+  import { t } from '../i18n.js'
+
   export let rejected = []
   export let totalIncluded = 0
 
-  const statusMeta = {
-    rejected: { label: 'Read, not included', color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)' },
-    removed:  { label: 'Included, removed later', color: '#f97316', bg: 'rgba(249,115,22,0.1)', border: 'rgba(249,115,22,0.3)' },
+  $: statusMeta = {
+    rejected: { label: $t('rej.statusRejected'), color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)' },
+    removed:  { label: $t('rej.statusRemoved'), color: '#f97316', bg: 'rgba(249,115,22,0.1)', border: 'rgba(249,115,22,0.3)' },
   }
   const ACCEPTED_COLOR = '#34d399'
 
@@ -19,27 +21,27 @@
   $: rejectedPct = totalReviewed ? (rejectedOutright / totalReviewed) * 100 : 0
   $: removedPct = totalReviewed ? (removedAfterInclusion / totalReviewed) * 100 : 0
 
-  const legend = [
-    { key: 'accepted', color: ACCEPTED_COLOR, label: 'Included', desc: 'Read and met the criteria; counted in the corpus' },
-    { key: 'rejected', color: statusMeta.rejected.color, label: 'Rejected', desc: 'Read or screened but did not meet the criteria; never got a corpus number' },
-    { key: 'removed', color: statusMeta.removed.color, label: 'Removed', desc: 'Was included with a corpus number, then taken out later on editorial judgment' },
+  $: legend = [
+    { key: 'accepted', color: ACCEPTED_COLOR, label: $t('rej.included'), desc: $t('rej.includedDesc') },
+    { key: 'rejected', color: statusMeta.rejected.color, label: $t('rej.rejected'), desc: $t('rej.rejectedDesc') },
+    { key: 'removed', color: statusMeta.removed.color, label: $t('rej.removed'), desc: $t('rej.removedDesc') },
   ]
 </script>
 
 <section class="rj-section">
   <div class="rj-header">
-    <h2>Rejected / Excluded Papers</h2>
-    <p class="subtitle">Papers read or screened during the search that did not make the final corpus. Kept so the selection process is transparent and nothing gets cited by accident.</p>
+    <h2>{$t('rej.title')}</h2>
+    <p class="subtitle">{$t('rej.subtitle')}</p>
   </div>
 
   <div class="rj-progress">
-    <div class="prog-label">All papers read</div>
+    <div class="prog-label">{$t('rej.allRead')}</div>
     <div class="prog-bar">
-      <div class="prog-seg" style="width:{acceptedPct}%; background:{ACCEPTED_COLOR}" title="Included {totalIncluded}"></div>
-      <div class="prog-seg" style="width:{rejectedPct}%; background:{statusMeta.rejected.color}" title="Rejected {rejectedOutright}"></div>
-      <div class="prog-seg" style="width:{removedPct}%; background:{statusMeta.removed.color}" title="Removed {removedAfterInclusion}"></div>
+      <div class="prog-seg" style="width:{acceptedPct}%; background:{ACCEPTED_COLOR}" title="{$t('rej.included')} {totalIncluded}"></div>
+      <div class="prog-seg" style="width:{rejectedPct}%; background:{statusMeta.rejected.color}" title="{$t('rej.rejected')} {rejectedOutright}"></div>
+      <div class="prog-seg" style="width:{removedPct}%; background:{statusMeta.removed.color}" title="{$t('rej.removed')} {removedAfterInclusion}"></div>
     </div>
-    <div class="prog-count">{totalReviewed} papers read in total</div>
+    <div class="prog-count">{$t('rej.totalRead', { n: totalReviewed })}</div>
 
     <div class="rj-legend">
       {#each legend as item}
@@ -60,8 +62,8 @@
   </div>
 
   <div class="filter-row">
-    {#each [['all', `All (${rejected.length})`], ['rejected', `Rejected (${rejectedOutright})`], ['removed', `Removed (${removedAfterInclusion})`]] as [f, label]}
-      <button class="filter-btn" class:active={filter === f} on:click={() => filter = f}>{label}</button>
+    {#each [['all', $t('common.all'), rejected.length], ['rejected', $t('rej.rejected'), rejectedOutright], ['removed', $t('rej.removed'), removedAfterInclusion]] as [f, label, n]}
+      <button class="filter-btn" class:active={filter === f} on:click={() => filter = f}>{$t('rej.filter', { label, n })}</button>
     {/each}
   </div>
 
@@ -71,7 +73,7 @@
       <div class="rj-card" style="--r-color:{meta.color}">
         <div class="rj-head">
           <span class="status-badge" style="color:{meta.color};border-color:{meta.border};background:{meta.bg}">{meta.label}</span>
-          {#if p.freedNumber}<span class="freed-badge">freed #{p.freedNumber}</span>{/if}
+          {#if p.freedNumber}<span class="freed-badge">{$t('rej.freed', { n: p.freedNumber })}</span>{/if}
           <span class="rj-batch">{p.batch}</span>
         </div>
         <div class="rj-body">
@@ -82,7 +84,7 @@
       </div>
     {/each}
     {#if filtered.length === 0}
-      <div class="empty">No papers in this category</div>
+      <div class="empty">{$t('rej.empty')}</div>
     {/if}
   </div>
 </section>

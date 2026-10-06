@@ -1,15 +1,17 @@
 <script>
+  import { t } from '../../i18n.js'
+
   export let papers = []
   export let domains = []
   export let dimensions = []
   export let cells = {} // cells[domainId][paperId][dimensionIndex] = { status, note }
   export let save
 
-  const STATUSES = [
-    { value: 'yes', label: '✓ Yes' },
-    { value: 'partial', label: '◑ Partial' },
-    { value: 'note', label: '· Note' },
-    { value: 'no', label: '— No' },
+  $: STATUSES = [
+    { value: 'yes', label: `✓ ${$t('dct.yes')}` },
+    { value: 'partial', label: `◑ ${$t('dct.partial')}` },
+    { value: 'note', label: `· ${$t('dct.note')}` },
+    { value: 'no', label: `— ${$t('dct.no')}` },
   ]
 
   let dims = []
@@ -55,7 +57,7 @@
   }
 
   function removeDimension(i) {
-    if (!confirm(`Remove "${dims[i] || 'this dimension'}" and every score in that column?`)) return
+    if (!confirm($t('cmp.confirmRemove', { name: dims[i] || $t('cmp.thisDimension') }))) return
     dims = dims.filter((_, j) => j !== i)
     for (const id in grid) grid[id] = grid[id].filter((_, j) => j !== i)
     touch()
@@ -74,7 +76,7 @@
     error = ''
     ok = ''
     if (dims.some((d) => !d.trim())) {
-      error = 'Every dimension needs a name'
+      error = $t('cmp.needName')
       return
     }
     const out = {}
@@ -88,7 +90,7 @@
     try {
       await save({ dimensions: dims.map((d) => d.trim()), cells: out })
       dirty = false
-      ok = 'Saved'
+      ok = $t('common.saved')
     } catch (e) {
       error = e.message
     } finally {
@@ -102,27 +104,27 @@
 <div class="cmp">
   <div class="block">
     <div class="block-head">
-      <h3>Rubric dimensions</h3>
-      <p class="hint">The columns every paper is scored on, such as "Uses real-world data".</p>
+      <h3>{$t('cmp.dims')}</h3>
+      <p class="hint">{$t('cmp.dimsHint')}</p>
     </div>
     <div class="dims">
       {#each dims as dim, i}
         <div class="dim-row">
           <span class="dim-num">{i + 1}</span>
-          <input type="text" bind:value={dims[i]} on:input={touch} placeholder="Dimension name" />
-          <button class="btn" on:click={() => moveDimension(i, -1)} disabled={i === 0} aria-label="Move up">↑</button>
-          <button class="btn" on:click={() => moveDimension(i, 1)} disabled={i === dims.length - 1} aria-label="Move down">↓</button>
-          <button class="btn ghost-danger" on:click={() => removeDimension(i)} aria-label="Remove">✕</button>
+          <input type="text" bind:value={dims[i]} on:input={touch} placeholder={$t('cmp.dimName')} />
+          <button class="btn" on:click={() => moveDimension(i, -1)} disabled={i === 0} aria-label={$t('cmp.up')}>↑</button>
+          <button class="btn" on:click={() => moveDimension(i, 1)} disabled={i === dims.length - 1} aria-label={$t('cmp.down')}>↓</button>
+          <button class="btn ghost-danger" on:click={() => removeDimension(i)} aria-label={$t('cmp.remove')}>✕</button>
         </div>
       {/each}
-      <button class="btn" on:click={addDimension}>+ Dimension</button>
+      <button class="btn" on:click={addDimension}>{$t('cmp.addDim')}</button>
     </div>
   </div>
 
   <div class="block">
     <div class="block-head">
-      <h3>Scores</h3>
-      <p class="hint">Pick a domain, then set each paper's status and an optional short note per dimension. Leave "No" with no note for an empty cell.</p>
+      <h3>{$t('cmp.scores')}</h3>
+      <p class="hint">{$t('cmp.scoresHint')}</p>
     </div>
     <div class="domain-chips">
       {#each domains as d}
@@ -133,16 +135,16 @@
     </div>
 
     {#if !dims.length}
-      <div class="empty">Add at least one dimension first.</div>
+      <div class="empty">{$t('cmp.needDim')}</div>
     {:else if !rows.length}
-      <div class="empty">This domain has no papers yet.</div>
+      <div class="empty">{$t('cmp.noPapers')}</div>
     {:else}
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th class="paper-col">Paper</th>
-              {#each dims as dim}<th>{dim || '(unnamed)'}</th>{/each}
+              <th class="paper-col">{$t('col.paper')}</th>
+              {#each dims as dim}<th>{dim || $t('cmp.unnamed')}</th>{/each}
             </tr>
           </thead>
           <tbody>
@@ -157,7 +159,7 @@
                     <select bind:value={cell.status} on:change={touch} class="st-{cell.status}">
                       {#each STATUSES as s}<option value={s.value}>{s.label}</option>{/each}
                     </select>
-                    <input type="text" bind:value={cell.note} on:input={touch} placeholder="note" />
+                    <input type="text" bind:value={cell.note} on:input={touch} placeholder={$t('cmp.notePh')} />
                   </td>
                 {/each}
               </tr>
@@ -171,10 +173,10 @@
   {#if error}<div class="msg error">{error}</div>{/if}
   {#if ok}<div class="msg ok">{ok}</div>{/if}
   <div class="actions">
-    <button class="btn primary" on:click={submit} disabled={saving || !dirty}>{saving ? 'Saving…' : 'Save comparison'}</button>
+    <button class="btn primary" on:click={submit} disabled={saving || !dirty}>{saving ? $t('common.saving') : $t('cmp.save')}</button>
     {#if dirty}
-      <button class="btn" on:click={init}>Discard changes</button>
-      <span class="unsaved">Unsaved changes</span>
+      <button class="btn" on:click={init}>{$t('cmp.discard')}</button>
+      <span class="unsaved">{$t('cmp.unsaved')}</span>
     {/if}
   </div>
 </div>

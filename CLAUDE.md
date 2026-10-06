@@ -8,7 +8,7 @@ Self-hosted literature review tracker: an Express 5 API (Node 24) with a Svelte 
 2. **Before committing:** `npm run build && npm test && npm run test:ui`. If Snyk is authenticated, also run `npm run security:scan` and take every finding seriously before calling it a false positive.
 3. **If a change touches sign-in, 2FA, roles, or the data API, add checks to [scripts/smoke-test.mjs](scripts/smoke-test.mjs). If it changes a screen, add them to [scripts/ui-test.mjs](scripts/ui-test.mjs).** These are the regression suites, and CI runs both. The UI test has already caught two bugs that the API test couldn't see.
 4. **When a task is finished, commit and push to GitHub** (`origin`, branch `main`) without waiting to be asked. Update this file with new design decisions, and the docs when users would notice the change: `README.md` (Thai, the main user manual) and `README.en.md` (English) together, or the right file in `docs/` (configuration, data format, development).
-5. This repo is a public template. Never commit real research data, personal names, or secrets. `data/` holds only the generic example corpus. The UI and docs are in English.
+5. This repo is a public template. Never commit real research data, personal names, or secrets. `data/` holds only the generic example corpus. The UI is bilingual (Thai default, English), see "Languages" below; code comments and docs other than `README.md` are in English.
 
 ## Commands
 
@@ -65,6 +65,16 @@ docker compose up -d --build         # app on :3000
 - `comparison.cells[domainId][paperId][dimIndex]`: a missing cell means `no`.
 - The corpus is sent only through the authenticated API and never bundled into `dist/`.
 - To add a field to a collection, update the validator in `dataStore.js`, the field schema in `ManageData.svelte`, the view that shows it, and [docs/DATA-FORMAT.md](docs/DATA-FORMAT.md).
+
+## Languages (Thai / English)
+
+- All UI text lives in `src/lib/i18n.js` as `'key': [English, Thai]`. Components use `$t('key', { param })`; never hard-code UI text in a component. A value can be a function of the params (English plurals).
+- `lang` is a store (`th` default, kept in `localStorage.lang`, mirrored to `<html lang>`). `LangToggle.svelte` switches it on the sign-in card and in the sidebar.
+- Labels kept in `const` arrays (field schemas, status maps) must be `$:` reactive so they re-render when the language changes.
+- Dates go through `$fmtDate` / `$fmtDateTime`: `th-TH` gives the Buddhist Era (พ.ศ.). Paper `year` stays CE because it is the citation year.
+- Server error messages stay English (the smoke test checks them). `translateServerError` in `i18n.js` maps them to Thai in `auth.js`; add a row there when you add a server message. Unknown messages are shown as sent.
+- Corpus content is never translated. Excel export headers follow the current language.
+- `scripts/ui-test.mjs` checks the Thai default, a translated server error and Buddhist-era dates, then switches to English, so the rest of the test can find buttons by their English text.
 
 ## Svelte 5 legacy-mode gotchas
 

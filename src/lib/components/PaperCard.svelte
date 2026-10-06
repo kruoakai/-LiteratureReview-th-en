@@ -1,4 +1,6 @@
 <script>
+  import { t } from '../i18n.js'
+
   export let paper
   export let domains
   export let expanded = false
@@ -32,7 +34,7 @@
     <span class="title-wrap">
       <span class="title">{paper.title}</span>
       {#if paper.caution}
-        <span class="badge caution">⚠️ cite with caution</span>
+        <span class="badge caution">{$t('card.caution')}</span>
       {/if}
     </span>
 
@@ -46,21 +48,21 @@
     <div class="card-body">
       <div class="section-grid">
         <div class="info-block">
-          <div class="info-label">What</div>
+          <div class="info-label">{$t('card.what')}</div>
           <div class="info-text">{paper.what}</div>
         </div>
         <div class="info-block">
-          <div class="info-label">How</div>
+          <div class="info-label">{$t('card.how')}</div>
           <div class="info-text">{paper.how}</div>
         </div>
         <div class="info-block">
-          <div class="info-label">Results</div>
+          <div class="info-label">{$t('card.results')}</div>
           <div class="info-text">{paper.results}</div>
         </div>
       </div>
 
       <div class="usage-block">
-        <div class="info-label">Usage in thesis</div>
+        <div class="info-label">{$t('card.usage')}</div>
         <div class="usage-text">{paper.usage}</div>
       </div>
 
@@ -75,7 +77,7 @@
           <a class="doi-link" href="https://doi.org/{paper.doi}" target="_blank" rel="noopener">DOI: {paper.doi} ↗</a>
         {/if}
         {#if paper.hasPdf}
-          <a class="pdf-link" href="/api/papers/{paper.id}/pdf" download>⬇ Download PDF</a>
+          <a class="pdf-link" href="/api/papers/{paper.id}/pdf" download>{$t('card.pdf')}</a>
         {/if}
       </div>
     </div>

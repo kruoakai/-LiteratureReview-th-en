@@ -100,7 +100,7 @@
 html { font-size: 15px; scroll-behavior: smooth; }
 
 body {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'Segoe UI', 'Leelawadee UI', Tahoma, system-ui, -apple-system, 'Noto Sans Thai', sans-serif;
   background: var(--bg);
   color: var(--text);
   line-height: 1.6;
@@ -169,6 +169,7 @@ a:hover { text-decoration: underline; }
 .auth-card.wide { max-width: 440px; }
 .auth-logo { display: flex; align-items: center; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
 .auth-logo .logo-icon { font-size: 1.6rem; }
+.auth-logo-text { flex: 1; min-width: 0; }
 .auth-logo .logo-title { font-size: 0.88rem; font-weight: 700; color: var(--text); line-height: 1.2; }
 .auth-logo .logo-sub { font-size: 0.68rem; color: var(--text3); }
 .auth-heading { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-top: 2px; }

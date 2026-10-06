@@ -1,6 +1,7 @@
 <script>
   import { downloadWorkbook, sheetName } from '../xlsx.js'
   import { toPng, toJpeg } from 'html-to-image'
+  import { t } from '../i18n.js'
 
   export let papers
   export let domains
@@ -72,7 +73,6 @@
 
   const statusIcon = s => ({ yes: '✓', partial: '◑', no: '—', note: '·' }[s] ?? '—')
   const statusClass = s => ({ yes: 'cell-yes', partial: 'cell-partial', no: 'cell-no', note: 'cell-note' }[s] ?? 'cell-no')
-  const statusLabel = s => ({ yes: 'Yes', partial: 'Partial', no: 'No', note: 'Note' }[s] ?? 'No')
 
   function cellFor(domainId, paperId, dimIndex) {
     return cells[domainId]?.[paperId]?.[dimIndex] || { status: 'no' }
@@ -80,7 +80,7 @@
 
   // Export uses a plain Yes/No — the on-screen table keeps the fuller Yes/Partial/No/Note detail.
   function cellText(cell) {
-    return cell.status === 'no' ? 'No' : 'Yes'
+    return cell.status === 'no' ? $t('dct.no') : $t('dct.yes')
   }
 
   function colHeader(p) {
@@ -89,7 +89,7 @@
 
   function domainAoa(d) {
     return [
-      ['Dimension', ...d.rows.map(colHeader)],
+      [$t('dct.dimension'), ...d.rows.map(colHeader)],
       ...dimensions.map((dim, di) => [dim, ...d.rows.map(p => cellText(cellFor(d.id, p.id, di)))]),
     ]
   }
@@ -108,13 +108,13 @@
 <section class="dct-section" class:capturing bind:this={sectionEl}>
   <div class="dct-header">
     <div>
-      <h2>Comparison Tables — By Domain</h2>
-      <p class="subtitle">Same {dimensions.length}-dimension rubric applied to every paper, grouped by domain.</p>
+      <h2>{$t('dct.title')}</h2>
+      <p class="subtitle">{$t('dct.subtitle', { n: dimensions.length })}</p>
     </div>
     <div class="export-group">
-      <button class="export-btn primary" on:click={exportAll}>⬇ Export All to Excel (.xlsx)</button>
-      <button class="export-btn" on:click={() => exportAllImage('png')}>⬇ Export All as PNG</button>
-      <button class="export-btn" on:click={() => exportAllImage('jpg')}>⬇ Export All as JPG</button>
+      <button class="export-btn primary" on:click={exportAll}>{$t('dt.exportAll')}</button>
+      <button class="export-btn" on:click={() => exportAllImage('png')}>{$t('dct.exportPng')}</button>
+      <button class="export-btn" on:click={() => exportAllImage('jpg')}>{$t('dct.exportJpg')}</button>
     </div>
   </div>
 
@@ -123,8 +123,8 @@
       <div class="domain-ct-head">
         <span class="dot" style="background:{d.color}"></span>
         <h3>D{d.id} — {d.fullLabel}</h3>
-        <span class="count-chip" style="color:{d.color};border-color:{d.color}55;background:{d.color}15">{d.rows.length} papers</span>
-        <button class="export-btn" on:click={() => exportDomain(d)}>⬇ Sheet</button>
+        <span class="count-chip" style="color:{d.color};border-color:{d.color}55;background:{d.color}15">{$t('dct.papers', { n: d.rows.length })}</span>
+        <button class="export-btn" on:click={() => exportDomain(d)}>{$t('dct.sheet')}</button>
         <button class="export-btn" on:click={() => exportDomainImage(d, 'png')}>⬇ PNG</button>
         <button class="export-btn" on:click={() => exportDomainImage(d, 'jpg')}>⬇ JPG</button>
       </div>
@@ -133,7 +133,7 @@
         <table class="ct-table">
           <thead>
             <tr>
-              <th class="dim-col">Dimension</th>
+              <th class="dim-col">{$t('dct.dimension')}</th>
               {#each d.rows as p}
                 <th class="paper-col" title={p.title}>
                   <div class="col-num">#{p.num}</div>

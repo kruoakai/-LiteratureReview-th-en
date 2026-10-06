@@ -112,6 +112,17 @@ Every account **must use 2FA**. Nobody can turn it off, not even an admin.
 
 ---
 
+## 🌐 Language (Thai / English)
+
+The screens are in **Thai by default**. Click **ไทย / EN** on the sign-in screen or at the bottom of the left sidebar to switch at any time. The browser remembers your choice.
+
+- 🗓️ **Dates:** Thai shows the Buddhist Era (e.g. 6 ต.ค. 2569); English shows the Common Era.
+- 📚 **Publication years** of papers always stay CE, to match your citations.
+- ✍️ **Your research data** (titles, notes, citation sentences) is shown exactly as entered, never translated.
+- 📊 **Excel exports** use column headers in the language you have selected.
+
+---
+
 ## 🧭 Doing your review, step by step
 
 The app is built around the steps below. Every step happens in **🛠️ Manage Data**, under *Views* in the left sidebar. You need an admin or manager account to see it.
